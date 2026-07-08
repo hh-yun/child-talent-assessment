@@ -219,9 +219,14 @@ body {
   </div>
 
   <!-- 大按钮 -->
-  <button onclick="showPage('page-age-select')" class="btn-float mt-8 px-10 py-4 text-white font-bold text-lg rounded-full" style="background:linear-gradient(135deg,#FFB6C1,#A29BFE);">
-    立即开始测评
-  </button>
+  <div class="flex flex-col gap-4 mt-8">
+    <button onclick="showPage('page-age-select')" class="btn-float px-10 py-4 text-white font-bold text-lg rounded-full" style="background:linear-gradient(135deg,#FFB6C1,#A29BFE);">
+      立即开始测评
+    </button>
+    <button onclick="showPage('page-history')" class="btn-float px-10 py-3 font-bold text-sm rounded-full" style="background:#FFFFFF; color:#666; border:2px solid #E0E0E0;">
+      📜 查看历史记录
+    </button>
+  </div>
 
   <!-- 底部免责声明 -->
   <div class="mt-8 p-4 rounded-2xl text-xs leading-relaxed w-full" style="max-width:800px; background:#F5F5F5; color:#999;">
@@ -229,7 +234,37 @@ body {
   </div>
 </div>
 
-<!-- ==================== 页面2：年龄段选择页 ==================== -->
+<!-- ==================== 页面2：历史记录页 ==================== -->
+<div id="page-history" class="page">
+  <div class="w-full" style="max-width:800px;">
+    <!-- 返回按钮 -->
+    <div class="w-full">
+      <button onclick="showPage('page-welcome')" class="mt-4 text-sm flex items-center gap-1" style="color:#888;">
+        ← 返回首页
+      </button>
+    </div>
+
+    <div class="text-center mt-4 mb-6">
+      <h2 class="text-xl md:text-2xl font-bold" style="color:#444;">📜 测评历史记录</h2>
+      <p class="text-sm mt-1" style="color:#888;">查看过往测评报告，追踪孩子成长轨迹</p>
+    </div>
+
+    <!-- 历史记录列表 -->
+    <div id="history-list" class="space-y-4"></div>
+
+    <!-- 空状态 -->
+    <div id="history-empty" class="hidden text-center py-12">
+      <div class="text-6xl mb-4">📝</div>
+      <p class="text-lg" style="color:#888;">暂无测评记录</p>
+      <p class="text-sm mt-2" style="color:#AAA;">完成测评后，记录会自动保存到这里</p>
+      <button onclick="showPage('page-age-select')" class="mt-6 px-8 py-3 text-white font-bold rounded-full" style="background:linear-gradient(135deg,#FFB6C1,#A29BFE);">
+        开始第一次测评
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 页面3：年龄段选择页 ==================== -->
 <div id="page-age-select" class="page">
   <!-- 返回按钮 -->
   <div class="w-full" style="max-width:800px;">
@@ -350,9 +385,10 @@ body {
         <div><span style="color:#999;">完成时间：</span><span id="report-time" class="font-bold" style="color:#444;"></span></div>
         <div><span style="color:#999;">理论依据：</span><span class="font-bold" style="color:#444;">多元智能理论</span></div>
       </div>
-      <div class="flex gap-3 mt-4">
+      <div class="flex gap-3 mt-4 flex-wrap">
         <button onclick="retakeTest()" class="px-4 py-2 rounded-full text-sm font-bold" style="background:#F0F0F0; color:#666;">重新测评</button>
         <button onclick="saveReport()" class="px-4 py-2 rounded-full text-sm font-bold text-white" style="background:linear-gradient(135deg,#87CEEB,#A29BFE);">保存报告</button>
+        <button onclick="shareReport()" class="px-4 py-2 rounded-full text-sm font-bold text-white" style="background:linear-gradient(135deg,#98FB98,#228B22);">📤 分享报告</button>
       </div>
     </div>
 
@@ -1014,6 +1050,10 @@ function showPage(pageId) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById(pageId).classList.add('active');
   window.scrollTo(0, 0);
+
+  if (pageId === 'page-history') {
+    renderHistory();
+  }
 }
 
 // ==================== 年龄段选择 ====================
@@ -1218,6 +1258,95 @@ function calculateScores() {
     });
     state.hollandScores = hollandScores;
   }
+
+  // 保存测评记录到历史
+  saveToHistory(scores);
+}
+
+// ==================== 保存到历史记录 ====================
+function saveToHistory(scores) {
+  const now = new Date();
+  const record = {
+    id: Date.now(),
+    timestamp: now.getTime(),
+    dateStr: now.getFullYear() + '-' + (now.getMonth()+1).toString().padStart(2,'0') + '-' + now.getDate().toString().padStart(2,'0'),
+    timeStr: now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0'),
+    age: state.age,
+    scores: scores,
+    hollandScores: state.hollandScores || null,
+    answers: state.answers
+  };
+
+  const history = JSON.parse(localStorage.getItem('talent_history') || '[]');
+  history.unshift(record);
+  if (history.length > 20) history.pop();
+  localStorage.setItem('talent_history', JSON.stringify(history));
+}
+
+// ==================== 渲染历史记录页面 ====================
+function renderHistory() {
+  const history = JSON.parse(localStorage.getItem('talent_history') || '[]');
+  const list = document.getElementById('history-list');
+  const empty = document.getElementById('history-empty');
+
+  if (history.length === 0) {
+    list.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
+
+  empty.classList.add('hidden');
+
+  let html = '';
+  history.forEach(record => {
+    const sorted = Object.entries(record.scores).sort((a,b) => b[1] - a[1]);
+    const topDim = sorted[0];
+    const topDimName = DIMENSIONS.find(d => d.key === topDim[0])?.name || topDim[0];
+
+    html += `
+      <div class="m-card p-4 cursor-pointer transition-all hover:shadow-md" onclick="loadHistoryRecord(${record.id})">
+        <div class="flex justify-between items-start">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="font-bold" style="color:#444;">${record.age}岁</span>
+              <span class="px-2 py-0.5 rounded-full text-xs" style="background:#FFE4B5; color:#8B4513;">${record.dateStr}</span>
+              <span class="text-xs" style="color:#999;">${record.timeStr}</span>
+            </div>
+            <div class="text-sm" style="color:#666;">
+              核心优势：<span style="color:#228B22; font-weight:bold;">${topDimName}</span>（${topDim[1]}分）
+            </div>
+          </div>
+          <div class="text-2xl">→</div>
+        </div>
+        <div class="mt-3 pt-3 border-t border-gray-100">
+          <div class="flex gap-2">
+            ${sorted.slice(0, 4).map(([key, score]) => {
+              const name = DIMENSIONS.find(d => d.key === key)?.name || key;
+              const color = score >= 75 ? '#98FB98' : (score >= 50 ? '#FFE4B5' : '#DDD');
+              return `<span class="px-2 py-1 rounded-lg text-xs" style="background:${color}; color:#666;">${name} ${score}</span>`;
+            }).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  list.innerHTML = html;
+}
+
+// ==================== 加载历史记录 ====================
+function loadHistoryRecord(recordId) {
+  const history = JSON.parse(localStorage.getItem('talent_history') || '[]');
+  const record = history.find(r => r.id === recordId);
+  if (!record) return;
+
+  state.age = record.age;
+  state.scores = record.scores;
+  state.hollandScores = record.hollandScores;
+  state.answers = record.answers;
+
+  showPage('page-report');
+  renderReport();
 }
 
 // ==================== 渲染报告 ====================
@@ -1721,6 +1850,48 @@ function confirmBack() {
 }
 function closeModal() {
   document.getElementById('modal-back').style.display = 'none';
+}
+
+// ==================== 分享报告 ====================
+function shareReport() {
+  const url = window.location.href;
+  const sorted = Object.entries(state.scores).sort((a,b) => b[1] - a[1]);
+  const top1 = sorted[0];
+  const top2 = sorted[1];
+  const top1Name = DIMENSIONS.find(d => d.key === top1[0])?.name || top1[0];
+  const top2Name = DIMENSIONS.find(d => d.key === top2[0])?.name || top2[0];
+
+  const shareText = `我家${state.age}岁宝贝的天赋测评报告出来啦！核心优势是${top1Name}和${top2Name}，快来测测你家孩子的天赋吧！\n${url}`;
+
+  if (navigator.share) {
+    navigator.share({
+      title: '儿童天赋测评报告',
+      text: shareText,
+      url: url
+    }).catch(() => {
+      fallbackCopyShare(shareText);
+    });
+  } else {
+    fallbackCopyShare(shareText);
+  }
+}
+
+function fallbackCopyShare(text) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => {
+      alert('分享链接已复制到剪贴板，快去粘贴给朋友吧！');
+    }).catch(() => {
+      alert('复制失败，请手动复制：\n' + text);
+    });
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    alert('分享链接已复制到剪贴板，快去粘贴给朋友吧！');
+  }
 }
 function goBackFromTest() {
   closeModal();
