@@ -1,0 +1,1864 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>儿童天赋测评与科学引导系统</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+/* 全局样式 */
+* { box-sizing: border-box; }
+body {
+  font-family: 'PingFang SC', 'Microsoft YaHei', 'Hiragino Sans GB', sans-serif;
+  background: linear-gradient(135deg, #FFF5F5 0%, #F0F8FF 50%, #FFFFF0 100%);
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* 页面切换淡入动画 */
+.page { display: none; flex-direction: column; align-items: center; min-height: 100vh; padding: 0 16px 40px; }
+.page.active { display: flex; animation: fadeIn 300ms ease-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* 选项缩放反馈 */
+.option-card { transition: all 200ms ease; cursor: pointer; }
+.option-card:hover { transform: scale(1.02); }
+.option-card:active { transform: scale(0.97); }
+.option-card.selected { transform: scale(1.03); }
+
+/* 进度条平滑过渡 */
+.progress-fill { transition: width 400ms ease; }
+
+/* 按钮上浮动画 */
+.btn-float { transition: all 300ms ease; }
+.btn-float:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
+
+/* 彩虹渐变 */
+.rainbow-gradient {
+  background: linear-gradient(90deg, #FFB6C1, #FDCB6E, #98FB98, #87CEEB, #A29BFE, #FFB6C1);
+  background-size: 200% 100%;
+  animation: rainbowShift 4s ease infinite;
+}
+@keyframes rainbowShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+
+/* 年龄卡片选中效果 */
+.age-card { transition: all 300ms ease; cursor: pointer; border: 3px solid transparent; }
+.age-card.selected { border-color: #A29BFE; transform: scale(1.03); box-shadow: 0 4px 20px rgba(162,155,254,0.3); }
+
+/* 复制按钮反馈 */
+.copy-btn { transition: all 200ms ease; }
+.copy-btn:hover { background: #A29BFE; color: white; }
+
+/* 卡片通用 */
+.m-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  padding: 20px;
+}
+
+/* 雷达图容器 */
+.radar-container { position: relative; display: flex; justify-content: center; align-items: center; }
+
+/* 滚动条美化 */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-thumb { background: #ddd; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- ==================== 页面1：欢迎页 ==================== -->
+<div id="page-welcome" class="page active">
+  <!-- 顶部彩虹渐变波浪SVG装饰 -->
+  <div class="w-full" style="max-width:800px;">
+    <svg viewBox="0 0 800 120" xmlns="http://www.w3.org/2000/svg" class="w-full">
+      <defs>
+        <linearGradient id="rainbowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" style="stop-color:#FFB6C1"/>
+          <stop offset="20%" style="stop-color:#FDCB6E"/>
+          <stop offset="40%" style="stop-color:#98FB98"/>
+          <stop offset="60%" style="stop-color:#87CEEB"/>
+          <stop offset="80%" style="stop-color:#A29BFE"/>
+          <stop offset="100%" style="stop-color:#FFB6C1"/>
+        </linearGradient>
+      </defs>
+      <path d="M0,60 C100,20 200,100 300,60 C400,20 500,100 600,60 C700,20 800,80 800,60 L800,120 L0,120 Z" fill="url(#rainbowGrad)" opacity="0.6"/>
+      <path d="M0,80 C150,40 250,110 400,70 C550,30 650,100 800,70 L800,120 L0,120 Z" fill="url(#rainbowGrad)" opacity="0.4"/>
+    </svg>
+  </div>
+
+  <!-- 主标题 -->
+  <div class="text-center mt-4 mb-6" style="max-width:700px;">
+    <h1 class="text-2xl md:text-4xl font-bold mb-3" style="color:#444;">儿童天赋测评与科学引导系统</h1>
+    <p class="text-sm md:text-base" style="color:#888;">基于多元智能 + 成功智力模型 | 科学识别孩子先天优势</p>
+  </div>
+
+  <!-- 中部插画区：5个简约卡通小人 -->
+  <div class="flex justify-center gap-3 md:gap-6 my-6 flex-wrap" style="max-width:600px;">
+    <!-- 阅读小人 -->
+    <svg width="80" height="100" viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="40" cy="22" r="16" fill="#FFD6E0"/>
+      <circle cx="34" cy="20" r="2" fill="#333"/>
+      <circle cx="46" cy="20" r="2" fill="#333"/>
+      <path d="M35 26 Q40 30 45 26" fill="none" stroke="#333" stroke-width="1.5" stroke-linecap="round"/>
+      <circle cx="32" cy="25" r="3" fill="#FFB6C1" opacity="0.6"/>
+      <circle cx="48" cy="25" r="3" fill="#FFB6C1" opacity="0.6"/>
+      <ellipse cx="40" cy="42" rx="10" ry="14" fill="#FFD6E0"/>
+      <path d="M30 38 Q30 34 20 32 L18 50 Q30 48 30 44" fill="#FFE4B5"/>
+      <path d="M50 38 Q50 34 60 32 L62 50 Q50 48 50 44" fill="#FFE4B5"/>
+      <line x1="30" y1="44" x2="18" y2="44" stroke="#DAA520" stroke-width="1"/>
+      <line x1="50" y1="44" x2="62" y2="44" stroke="#DAA520" stroke-width="1"/>
+      <line x1="30" y1="48" x2="20" y2="48" stroke="#DAA520" stroke-width="1"/>
+      <line x1="50" y1="48" x2="60" y2="48" stroke="#DAA520" stroke-width="1"/>
+      <path d="M32 56 Q32 68 28 82" stroke="#87CEEB" stroke-width="4" stroke-linecap="round"/>
+      <path d="M48 56 Q48 68 52 82" stroke="#87CEEB" stroke-width="4" stroke-linecap="round"/>
+      <text x="40" y="96" text-anchor="middle" font-size="11" fill="#666">阅读</text>
+    </svg>
+    <!-- 运动小人 -->
+    <svg width="80" height="100" viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="40" cy="18" r="16" fill="#A2D9FF"/>
+      <circle cx="34" cy="16" r="2" fill="#333"/>
+      <circle cx="46" cy="16" r="2" fill="#333"/>
+      <path d="M35 22 Q40 26 45 22" fill="none" stroke="#333" stroke-width="1.5" stroke-linecap="round"/>
+      <circle cx="32" cy="21" r="3" fill="#87CEEB" opacity="0.6"/>
+      <circle cx="48" cy="21" r="3" fill="#87CEEB" opacity="0.6"/>
+      <ellipse cx="40" cy="42" rx="10" ry="14" fill="url(#grad-sport)"/>
+      <defs><linearGradient id="grad-sport" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#A2D9FF"/><stop offset="100%" stop-color="#87CEEB"/></linearGradient></defs>
+      <path d="M30 38 Q20 28 12 20" stroke="#A2D9FF" stroke-width="4" stroke-linecap="round"/>
+      <path d="M50 38 Q60 28 68 20" stroke="#A2D9FF" stroke-width="4" stroke-linecap="round"/>
+      <path d="M32 56 Q22 70 28 85" stroke="#FFE4B5" stroke-width="4" stroke-linecap="round"/>
+      <path d="M48 56 Q58 70 52 85" stroke="#FFE4B5" stroke-width="4" stroke-linecap="round"/>
+      <text x="40" y="96" text-anchor="middle" font-size="11" fill="#666">运动</text>
+    </svg>
+    <!-- 弹音乐小人 -->
+    <svg width="80" height="100" viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="40" cy="18" r="16" fill="#B8F0B8"/>
+      <circle cx="34" cy="16" r="2" fill="#333"/>
+      <circle cx="46" cy="16" r="2" fill="#333"/>
+      <path d="M35 22 Q40 26 45 22" fill="none" stroke="#333" stroke-width="1.5" stroke-linecap="round"/>
+      <circle cx="32" cy="21" r="3" fill="#98FB98" opacity="0.6"/>
+      <circle cx="48" cy="21" r="3" fill="#98FB98" opacity="0.6"/>
+      <ellipse cx="40" cy="42" rx="10" ry="14" fill="#FFD6E0"/>
+      <path d="M30 38 Q20 45 16 55" stroke="#FFD6E0" stroke-width="4" stroke-linecap="round"/>
+      <path d="M50 38 Q60 45 64 55" stroke="#FFD6E0" stroke-width="4" stroke-linecap="round"/>
+      <ellipse cx="42" cy="52" rx="18" ry="12" fill="#FFE4B5"/>
+      <path d="M26 48 Q26 40 32 32" stroke="#DAA520" stroke-width="2"/>
+      <circle cx="32" cy="32" r="3" fill="#DAA520"/>
+      <path d="M40 48 Q45 42 52 38" stroke="#888" stroke-width="1.5"/>
+      <path d="M42 50 Q48 44 56 40" stroke="#888" stroke-width="1.5"/>
+      <path d="M44 52 Q50 46 58 42" stroke="#888" stroke-width="1.5"/>
+      <path d="M32 56 Q30 70 28 85" stroke="#87CEEB" stroke-width="4" stroke-linecap="round"/>
+      <path d="M48 56 Q50 70 52 85" stroke="#87CEEB" stroke-width="4" stroke-linecap="round"/>
+      <text x="40" y="96" text-anchor="middle" font-size="11" fill="#666">弹音乐</text>
+    </svg>
+    <!-- 自然观察小人 -->
+    <svg width="80" height="100" viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="40" cy="18" r="16" fill="#FFE4B5"/>
+      <circle cx="34" cy="16" r="2" fill="#333"/>
+      <circle cx="46" cy="16" r="2" fill="#333"/>
+      <path d="M35 22 Q40 26 45 22" fill="none" stroke="#333" stroke-width="1.5" stroke-linecap="round"/>
+      <circle cx="32" cy="21" r="3" fill="#FFB6C1" opacity="0.6"/>
+      <circle cx="48" cy="21" r="3" fill="#FFB6C1" opacity="0.6"/>
+      <ellipse cx="40" cy="42" rx="10" ry="14" fill="#87CEEB"/>
+      <path d="M30 38 Q20 42 16 50" stroke="#87CEEB" stroke-width="4" stroke-linecap="round"/>
+      <path d="M50 38 Q60 42 64 50" stroke="#87CEEB" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="58" cy="48" r="8" fill="none" stroke="#333" stroke-width="1.5"/>
+      <circle cx="58" cy="48" r="3" fill="#333"/>
+      <line x1="58" y1="40" x2="58" y2="28" stroke="#98FB98" stroke-width="3"/>
+      <ellipse cx="58" cy="26" rx="6" ry="8" fill="#98FB98"/>
+      <line x1="54" y1="22" x2="50" y2="16" stroke="#228B22" stroke-width="1.5"/>
+      <line x1="62" y1="22" x2="66" y2="14" stroke="#228B22" stroke-width="1.5"/>
+      <path d="M32 56 Q30 70 28 85" stroke="#FFE4B5" stroke-width="4" stroke-linecap="round"/>
+      <path d="M48 56 Q50 70 52 85" stroke="#FFE4B5" stroke-width="4" stroke-linecap="round"/>
+      <text x="40" y="96" text-anchor="middle" font-size="11" fill="#666">自然观察</text>
+    </svg>
+    <!-- 绘画创造小人 -->
+    <svg width="80" height="100" viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="40" cy="22" r="16" fill="#DDD0FF"/>
+      <circle cx="34" cy="20" r="2" fill="#333"/>
+      <circle cx="46" cy="20" r="2" fill="#333"/>
+      <path d="M35 26 Q40 30 45 26" fill="none" stroke="#333" stroke-width="1.5" stroke-linecap="round"/>
+      <circle cx="32" cy="25" r="3" fill="#A29BFE" opacity="0.6"/>
+      <circle cx="48" cy="25" r="3" fill="#A29BFE" opacity="0.6"/>
+      <ellipse cx="40" cy="42" rx="10" ry="14" fill="#DDD0FF"/>
+      <path d="M30 38 Q22 50 18 56" stroke="#DDD0FF" stroke-width="4" stroke-linecap="round"/>
+      <path d="M50 38 Q58 50 62 56" stroke="#DDD0FF" stroke-width="4" stroke-linecap="round"/>
+      <rect x="18" y="50" width="20" height="28" rx="2" fill="#FFE4B5"/>
+      <rect x="16" y="48" width="24" height="4" rx="1" fill="#888"/>
+      <circle cx="24" cy="60" r="3" fill="#FFB6C1"/>
+      <circle cx="32" cy="68" r="3" fill="#87CEEB"/>
+      <circle cx="26" cy="74" r="2" fill="#98FB98"/>
+      <line x1="30" y1="56" x2="38" y2="48" stroke="#FFE4B5" stroke-width="1"/>
+      <line x1="32" y1="56" x2="40" y2="54" stroke="#FFE4B5" stroke-width="1"/>
+      <line x1="34" y1="56" x2="42" y2="60" stroke="#FFE4B5" stroke-width="1"/>
+      <path d="M32 56 Q32 70 30 85" stroke="#87CEEB" stroke-width="4" stroke-linecap="round"/>
+      <path d="M48 56 Q48 70 50 85" stroke="#87CEEB" stroke-width="4" stroke-linecap="round"/>
+      <text x="40" y="96" text-anchor="middle" font-size="11" fill="#666">绘画创造</text>
+    </svg>
+  </div>
+
+  <!-- 3张价值卡片 -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 w-full" style="max-width:800px;">
+    <div class="m-card text-center" style="background:linear-gradient(135deg,#FFF0F3,#FFE4E8);">
+      <div class="text-3xl mb-2">🔬</div>
+      <h3 class="font-bold text-base mb-1" style="color:#D63384;">科学分龄测评</h3>
+      <p class="text-xs" style="color:#888;">4大年龄段专属题库，贴合儿童发展规律</p>
+    </div>
+    <div class="m-card text-center" style="background:linear-gradient(135deg,#F0F8FF,#E0F0FF);">
+      <div class="text-3xl mb-2">📊</div>
+      <h3 class="font-bold text-base mb-1" style="color:#1E90FF;">8维天赋雷达可视化</h3>
+      <p class="text-xs" style="color:#888;">直观看清优势与待拓展能力</p>
+    </div>
+    <div class="m-card text-center" style="background:linear-gradient(135deg,#FFFFF0,#FFF8DC);">
+      <div class="text-3xl mb-2">📋</div>
+      <h3 class="font-bold text-base mb-1" style="color:#DAA520;">落地式家庭教育方案</h3>
+      <p class="text-xs" style="color:#888;">可直接执行的培养清单+沟通话术</p>
+    </div>
+  </div>
+
+  <!-- 大按钮 -->
+  <button onclick="showPage('page-age-select')" class="btn-float mt-8 px-10 py-4 text-white font-bold text-lg rounded-full" style="background:linear-gradient(135deg,#FFB6C1,#A29BFE);">
+    立即开始测评
+  </button>
+
+  <!-- 底部免责声明 -->
+  <div class="mt-8 p-4 rounded-2xl text-xs leading-relaxed w-full" style="max-width:800px; background:#F5F5F5; color:#999;">
+    <strong>免责声明：</strong>本测评仅基于家长观察的趣味参考工具，依托发展心理学理论设计，不具备临床心理诊断资质；儿童天赋具备动态可塑性，测评结果不定义孩子终身发展；若存在发育、心理、学习重大障碍，请前往专业儿童心理/教育机构线下评估。
+  </div>
+</div>
+
+<!-- ==================== 页面2：年龄段选择页 ==================== -->
+<div id="page-age-select" class="page">
+  <!-- 返回按钮 -->
+  <div class="w-full" style="max-width:800px;">
+    <button onclick="showPage('page-welcome')" class="mt-4 text-sm flex items-center gap-1" style="color:#888;">
+      ← 返回首页
+    </button>
+  </div>
+
+  <div class="text-center mt-4 mb-6">
+    <h2 class="text-xl md:text-2xl font-bold" style="color:#444;">请选择孩子当前年龄段</h2>
+    <p class="text-sm mt-1" style="color:#888;">系统自动匹配专属测评题目</p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full" style="max-width:800px;">
+    <!-- 3-6岁 -->
+    <div class="age-card m-card flex items-start gap-3" data-age="3-6" onclick="selectAge(this)">
+      <svg width="48" height="48" viewBox="0 0 48 48" class="flex-shrink-0 mt-1">
+        <circle cx="24" cy="14" r="10" fill="#FFB6C1"/>
+        <rect x="18" y="24" width="12" height="14" rx="4" fill="#FDCB6E"/>
+        <rect x="14" y="10" width="20" height="4" rx="2" fill="#FDCB6E" opacity="0.7"/>
+      </svg>
+      <div>
+        <h3 class="font-bold text-base" style="color:#D63384;">3-6岁 幼儿启蒙</h3>
+        <p class="text-xs mt-1" style="color:#999;">家长观察量表、简易行为判断题</p>
+        <p class="text-xs mt-1" style="color:#aaa;">基础感知、动手、情绪表达、语言萌芽</p>
+      </div>
+    </div>
+    <!-- 6-9岁 -->
+    <div class="age-card m-card flex items-start gap-3" data-age="6-9" onclick="selectAge(this)">
+      <svg width="48" height="48" viewBox="0 0 48 48" class="flex-shrink-0 mt-1">
+        <circle cx="24" cy="14" r="10" fill="#87CEEB"/>
+        <rect x="18" y="24" width="12" height="14" rx="4" fill="#98FB98"/>
+        <rect x="10" y="8" width="12" height="8" rx="2" fill="#87CEEB" opacity="0.5"/>
+      </svg>
+      <div>
+        <h3 class="font-bold text-base" style="color:#1E90FF;">6-9岁 小学低段</h3>
+        <p class="text-xs mt-1" style="color:#999;">生活化情境选择题</p>
+        <p class="text-xs mt-1" style="color:#aaa;">学科基础、兴趣偏好、简单逻辑、同伴相处</p>
+      </div>
+    </div>
+    <!-- 9-12岁 -->
+    <div class="age-card m-card flex items-start gap-3" data-age="9-12" onclick="selectAge(this)">
+      <svg width="48" height="48" viewBox="0 0 48 48" class="flex-shrink-0 mt-1">
+        <circle cx="24" cy="14" r="10" fill="#98FB98"/>
+        <rect x="18" y="24" width="12" height="14" rx="4" fill="#A29BFE"/>
+        <circle cx="34" cy="10" r="6" fill="#FDCB6E" opacity="0.6"/>
+      </svg>
+      <div>
+        <h3 class="font-bold text-base" style="color:#228B22;">9-12岁 小学高段</h3>
+        <p class="text-xs mt-1" style="color:#999;">深度情境+持久兴趣测试</p>
+        <p class="text-xs mt-1" style="color:#aaa;">批判性思维、自主学习、长期坚持、创造能力</p>
+      </div>
+    </div>
+    <!-- 12-18岁 -->
+    <div class="age-card m-card flex items-start gap-3" data-age="12-18" onclick="selectAge(this)">
+      <svg width="48" height="48" viewBox="0 0 48 48" class="flex-shrink-0 mt-1">
+        <circle cx="24" cy="14" r="10" fill="#FDCB6E"/>
+        <rect x="18" y="24" width="12" height="14" rx="4" fill="#A29BFE"/>
+        <rect x="12" y="6" width="24" height="4" rx="2" fill="#A29BFE" opacity="0.5"/>
+      </svg>
+      <div>
+        <h3 class="font-bold text-base" style="color:#DAA520;">12-18岁 初高中</h3>
+        <p class="text-xs mt-1" style="color:#999;">多元智能+霍兰德职业+性格优势题</p>
+        <p class="text-xs mt-1" style="color:#aaa;">职业倾向、自我认知、价值取向、长期发展方向</p>
+      </div>
+    </div>
+  </div>
+
+  <button id="btn-start-test" onclick="startTest()" class="btn-float mt-8 px-8 py-3 text-white font-bold rounded-full opacity-50 cursor-not-allowed" style="background:linear-gradient(135deg,#87CEEB,#A29BFE);" disabled>
+    下一步，开始答题
+  </button>
+</div>
+
+<!-- ==================== 页面3：测评答题页 ==================== -->
+<div id="page-test" class="page">
+  <!-- 顶部固定栏 -->
+  <div class="w-full sticky top-0 z-10 bg-white bg-opacity-95 rounded-b-2xl shadow-sm p-3 flex items-center gap-3" style="max-width:800px;">
+    <button onclick="confirmBack()" class="text-sm flex-shrink-0" style="color:#888;">← 返回</button>
+    <div class="flex-1">
+      <div class="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+        <div id="progress-bar" class="progress-fill h-full rounded-full" style="width:0%; background:linear-gradient(90deg,#FFB6C1,#87CEEB,#98FB98);"></div>
+      </div>
+    </div>
+    <span id="question-number" class="text-sm font-bold flex-shrink-0" style="color:#666;">0/0</span>
+    <span id="dimension-tag" class="text-xs px-2 py-1 rounded-full flex-shrink-0" style="background:#F0E6FF; color:#A29BFE;"></span>
+  </div>
+
+  <!-- 题目区 -->
+  <div class="w-full mt-6" style="max-width:700px;">
+    <div class="m-card">
+      <p id="question-text" class="text-base md:text-lg font-medium leading-relaxed" style="color:#444;"></p>
+      <!-- 简约SVG小插图 -->
+      <div id="question-icon" class="flex justify-center my-3"></div>
+    </div>
+
+    <!-- 4个选项 -->
+    <div id="options-container" class="flex flex-col gap-3 mt-4"></div>
+
+    <!-- 下一题按钮 -->
+    <div id="next-btn-container" class="mt-6 text-center" style="display:none;">
+      <button id="btn-next" onclick="nextQuestion()" class="btn-float px-8 py-3 text-white font-bold rounded-full" style="background:linear-gradient(135deg,#FFB6C1,#A29BFE);">
+        下一题
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 页面4：结果报告页 ==================== -->
+<div id="page-report" class="page">
+  <div class="w-full" style="max-width:800px;">
+
+    <!-- 板块1：测评基础信息卡片 -->
+    <div class="m-card mb-4">
+      <div class="rainbow-gradient h-2 rounded-full mb-4"></div>
+      <h2 class="text-xl font-bold mb-3" style="color:#444;">📋 测评报告</h2>
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+        <div><span style="color:#999;">年龄段：</span><span id="report-age" class="font-bold" style="color:#444;"></span></div>
+        <div><span style="color:#999;">完成时间：</span><span id="report-time" class="font-bold" style="color:#444;"></span></div>
+        <div><span style="color:#999;">理论依据：</span><span class="font-bold" style="color:#444;">多元智能理论</span></div>
+      </div>
+      <div class="flex gap-3 mt-4">
+        <button onclick="retakeTest()" class="px-4 py-2 rounded-full text-sm font-bold" style="background:#F0F0F0; color:#666;">重新测评</button>
+        <button onclick="saveReport()" class="px-4 py-2 rounded-full text-sm font-bold text-white" style="background:linear-gradient(135deg,#87CEEB,#A29BFE);">保存报告</button>
+      </div>
+    </div>
+
+    <!-- 板块2：8大智能天赋雷达图 -->
+    <div class="m-card mb-4">
+      <h3 class="text-lg font-bold mb-4" style="color:#444;">🎯 8大智能天赋雷达图</h3>
+      <div class="radar-container">
+        <canvas id="radar-canvas" width="400" height="400"></canvas>
+      </div>
+      <div class="flex justify-center gap-4 mt-3 text-xs">
+        <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded-full" style="background:#98FB98;"></span> 优势区 ≥75</span>
+        <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded-full" style="background:#FFE4B5;"></span> 潜力区 50-74</span>
+        <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded-full" style="background:#DDD;"></span> 关注区 &lt;50</span>
+      </div>
+    </div>
+
+    <!-- 板块3：天赋分区解读 -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+      <!-- 核心优势天赋区 -->
+      <div class="m-card" style="background:linear-gradient(135deg,#F0FFF0,#E8FFE8);">
+        <h3 class="text-lg font-bold mb-3" style="color:#228B22;">🌟 核心优势天赋区</h3>
+        <div id="advantage-zone"></div>
+      </div>
+      <!-- 潜力拓展天赋区 -->
+      <div class="m-card" style="background:linear-gradient(135deg,#FFF8F0,#FFF0E0);">
+        <h3 class="text-lg font-bold mb-3" style="color:#DAA520;">🌱 潜力拓展天赋区</h3>
+        <div id="potential-zone"></div>
+      </div>
+      <!-- 关注提升天赋区 -->
+      <div class="m-card" style="background:linear-gradient(135deg,#F5F5F5,#EEEEEE);">
+        <h3 class="text-lg font-bold mb-3" style="color:#888;">💪 关注提升天赋区</h3>
+        <div id="weak-zone"></div>
+      </div>
+    </div>
+
+    <!-- 板块3.5：霍兰德职业倾向分析（仅12-18岁显示） -->
+    <div id="holland-section" class="m-card mb-4" style="display:none; background:linear-gradient(135deg,#FFFAF0,#F0F8FF);">
+      <h3 class="text-lg font-bold mb-4" style="color:#DAA520;">🎯 霍兰德职业倾向分析</h3>
+      <div id="holland-report"></div>
+    </div>
+
+    <!-- 板块4：定制化分层行动脚手架指南 -->
+    <div class="m-card mb-4">
+      <h3 class="text-lg font-bold mb-4" style="color:#444;">🧗 定制化分层行动脚手架指南</h3>
+      <div id="action-guide"></div>
+    </div>
+
+    <!-- 板块5：家长正向沟通话术模板 -->
+    <div class="m-card mb-4" style="background:linear-gradient(135deg,#FFF0F8,#F8F0FF);">
+      <h3 class="text-lg font-bold mb-4" style="color:#A29BFE;">💬 家长正向沟通话术模板</h3>
+      <div id="communication-templates"></div>
+    </div>
+
+    <!-- 板块6：科学科普+二次测评入口 -->
+    <div class="m-card mb-4 text-center">
+      <h3 class="text-lg font-bold mb-3" style="color:#444;">📚 科学科普</h3>
+      <p class="text-sm leading-relaxed" style="color:#666;">
+        儿童天赋具有动态发展性。大脑神经可塑性研究表明，儿童的能力并非固定不变，而是随着经验、环境和教育不断重塑。不同智能在不同年龄段可能呈现"爆发式增长"，今天表现一般的维度，明天可能因一个契机而飞速发展。因此，测评结果应视为"当前快照"而非"终身标签"，建议每6-12个月重新评估。
+      </p>
+      <div class="flex justify-center gap-3 mt-4">
+        <button onclick="retakeTest()" class="btn-float px-6 py-3 text-white font-bold rounded-full" style="background:linear-gradient(135deg,#FFB6C1,#A29BFE);">重新测评</button>
+        <button onclick="showPage('page-welcome')" class="btn-float px-6 py-3 font-bold rounded-full" style="background:#F0F0F0; color:#666;">返回首页</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ==================== 返回确认弹窗 ==================== -->
+<div id="modal-back" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.4);">
+  <div class="m-card text-center" style="max-width:360px;">
+    <h3 class="font-bold text-lg mb-2" style="color:#444;">确认返回？</h3>
+    <p class="text-sm mb-4" style="color:#888;">当前答题进度已保存，返回后可继续作答。</p>
+    <div class="flex gap-3 justify-center">
+      <button onclick="closeModal()" class="px-4 py-2 rounded-full text-sm" style="background:#F0F0F0; color:#666;">取消</button>
+      <button onclick="goBackFromTest()" class="px-4 py-2 rounded-full text-sm text-white" style="background:linear-gradient(135deg,#FFB6C1,#A29BFE);">确认返回</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==================== 全局状态 ====================
+const state = {
+  age: '',        // 选中的年龄段
+  answers: {},    // 答题记录 { "0": 0, "1": 2, ... } 值为选项索引
+  scores: {},     // 各维度得分
+  currentQ: 0,    // 当前题号
+  questions: []   // 当前题库
+};
+
+// ==================== 维度配置 ====================
+const DIMENSIONS = [
+  { key: 'linguistic', name: '语言', icon: '📖' },
+  { key: 'logical', name: '逻辑数理', icon: '🔢' },
+  { key: 'spatial', name: '空间视觉', icon: '🧩' },
+  { key: 'kinesthetic', name: '身体动觉', icon: '🏃' },
+  { key: 'musical', name: '音乐韵律', icon: '🎵' },
+  { key: 'interpersonal', name: '人际社交', icon: '🤝' },
+  { key: 'intrapersonal', name: '内省自省', icon: '🧘' },
+  { key: 'naturalist', name: '自然观察', icon: '🌿' }
+];
+
+const DIM_LABELS = ['语言','逻辑数理','空间视觉','身体动觉','音乐韵律','人际社交','内省自省','自然观察'];
+
+// ==================== 题库数据 ====================
+const QUESTION_BANKS = {
+  '3-6': [
+    // linguistic 3题
+    {dim:'linguistic',text:'您的孩子在听故事时，是否经常追问"然后呢？"或者要求再讲一遍？'},
+    {dim:'linguistic',text:'您的孩子是否会主动用丰富的词汇描述自己看到的事物？'},
+    {dim:'linguistic',text:'您的孩子是否喜欢模仿大人说话的语气和用词？'},
+    // logical 3题
+    {dim:'logical',text:'您的孩子是否对数字感兴趣，比如数台阶、数餐具？'},
+    {dim:'logical',text:'您的孩子是否喜欢问"为什么"，对因果关系充满好奇？'},
+    {dim:'logical',text:'您的孩子是否能很快发现物品的规律排列（如颜色交替）？'},
+    // spatial 3题
+    {dim:'spatial',text:'您的孩子是否喜欢用积木搭出各种造型？'},
+    {dim:'spatial',text:'您的孩子是否能很快记住新去的地方的路线？'},
+    {dim:'spatial',text:'您的孩子是否喜欢画画，而且画面内容比较丰富？'},
+    // kinesthetic 3题
+    {dim:'kinesthetic',text:'您的孩子是否特别好动，喜欢跑跳攀爬？'},
+    {dim:'kinesthetic',text:'您的孩子做手工时，手指灵活度如何？'},
+    {dim:'kinesthetic',text:'您的孩子是否喜欢模仿动作或跳舞？'},
+    // musical 3题
+    {dim:'musical',text:'您的孩子听到音乐是否会自然地跟着节奏摇摆？'},
+    {dim:'musical',text:'您的孩子是否能辨别不同乐器的声音？'},
+    {dim:'musical',text:'您的孩子是否经常自编自唱小曲子？'},
+    // interpersonal 3题
+    {dim:'interpersonal',text:'您的孩子是否喜欢和小朋友一起玩，而且很受欢迎？'},
+    {dim:'interpersonal',text:'您的孩子是否能在别的小朋友哭的时候去安慰？'},
+    {dim:'interpersonal',text:'您的孩子是否能理解大人的表情变化？'},
+    // intrapersonal 3题
+    {dim:'intrapersonal',text:'您的孩子是否能独处自娱自乐较长时间？'},
+    {dim:'intrapersonal',text:'您的孩子是否能用语言表达自己的情绪？'},
+    {dim:'intrapersonal',text:'您的孩子是否对某些事情有自己明确的偏好和坚持？'},
+    // naturalist 3题
+    {dim:'naturalist',text:'您的孩子是否对动植物特别感兴趣，喜欢观察小虫子、花草？'},
+    {dim:'naturalist',text:'您的孩子是否喜欢在户外探索自然？'},
+    {dim:'naturalist',text:'您的孩子是否能注意到天气和季节的变化？'}
+  ],
+
+  '6-9': [
+    // linguistic 4题
+    {dim:'linguistic',text:'你在课间经常想给同学讲故事或分享自己读到的内容'},
+    {dim:'linguistic',text:'写作文时，你能写得又多又生动'},
+    {dim:'linguistic',text:'遇到不认识的字，你会主动查字典或问老师'},
+    {dim:'linguistic',text:'读完一本喜欢的书，你会迫不及待地分享给朋友'},
+    // logical 4题
+    {dim:'logical',text:'做数学题时，你更喜欢挑战难题而不是做简单的'},
+    {dim:'logical',text:'面对拼图，你能分析规律快速完成'},
+    {dim:'logical',text:'买东西时，你会心算大约的价格'},
+    {dim:'logical',text:'下棋或玩策略游戏时，你能提前想好几步'},
+    // spatial 4题
+    {dim:'spatial',text:'用积木或乐高时，你能自己设计出复杂造型'},
+    {dim:'spatial',text:'看地图找路，你能很快找到目标位置'},
+    {dim:'spatial',text:'美术课上，你的构图和配色都很出色'},
+    {dim:'spatial',text:'想象一个物体旋转后的样子，你能很轻松地想象出来'},
+    // kinesthetic 4题
+    {dim:'kinesthetic',text:'体育课上你表现突出，喜欢参加比赛'},
+    {dim:'kinesthetic',text:'学习新的运动或舞蹈，你能很快学会'},
+    {dim:'kinesthetic',text:'做手工或折纸时，你的手指很灵活，做得精美'},
+    {dim:'kinesthetic',text:'课间你更喜欢跑跳玩游戏而不是坐着休息'},
+    // musical 4题
+    {dim:'musical',text:'听到一首新歌，你很快就能哼出旋律'},
+    {dim:'musical',text:'上音乐课时你非常投入，表现很好'},
+    {dim:'musical',text:'你会演奏乐器，而且很喜欢'},
+    {dim:'musical',text:'做作业时听音乐，你觉得更能集中注意力'},
+    // interpersonal 4题
+    {dim:'interpersonal',text:'小组合作时，你经常主动组织协调'},
+    {dim:'interpersonal',text:'朋友之间发生矛盾，你会主动调解'},
+    {dim:'interpersonal',text:'到新环境，你能很快交到朋友'},
+    {dim:'interpersonal',text:'你能敏锐地察觉到朋友的情绪变化'},
+    // intrapersonal 4题
+    {dim:'intrapersonal',text:'你对自己的优缺点很清楚'},
+    {dim:'intrapersonal',text:'遇到困难时，你会自己想办法解决'},
+    {dim:'intrapersonal',text:'你有自己明确的目标，而且在努力'},
+    {dim:'intrapersonal',text:'独处时你很享受，能做很多事'},
+    // naturalist 4题
+    {dim:'naturalist',text:'去公园或郊外，你会兴奋地观察动植物'},
+    {dim:'naturalist',text:'你能辨认出很多种动植物'},
+    {dim:'naturalist',text:'你对环保和自然纪录片非常感兴趣'},
+    {dim:'naturalist',text:'你养过植物或小动物，而且照顾得很好'}
+  ],
+
+  '9-12': [
+    // linguistic 5题
+    {dim:'linguistic',text:'如果让你创办社团，你会选择辩论社或文学社'},
+    {dim:'linguistic',text:'阅读有深度的书时，你会沉浸其中并做笔记'},
+    {dim:'linguistic',text:'课堂上讨论有争议的话题，你会积极发言且有理有据'},
+    {dim:'linguistic',text:'写文章时，你更在意观点是否深刻和逻辑是否严谨'},
+    {dim:'linguistic',text:'学习新词汇或外语时，你非常投入且学得很快'},
+    // logical 5题
+    {dim:'logical',text:'遇到复杂的逻辑谜题，你会非常兴奋地钻研'},
+    {dim:'logical',text:'做科学实验时，你会主动设计实验来验证假设'},
+    {dim:'logical',text:'你对数学中"为什么这样算"非常好奇，会自己研究'},
+    {dim:'logical',text:'规划旅行时，你会详细规划路线和预算'},
+    {dim:'logical',text:'分析数据和图表，你能很快找到规律'},
+    // spatial 5题
+    {dim:'spatial',text:'如果要重新布置房间，你在脑中就能设计好方案'},
+    {dim:'spatial',text:'学习几何时，你的空间想象力很强'},
+    {dim:'spatial',text:'你尝试过3D建模或建筑设计，而且很喜欢'},
+    {dim:'spatial',text:'看建筑或室内设计图，你很有感觉能看懂'},
+    {dim:'spatial',text:'玩迷宫或空间解谜游戏，你非常擅长'},
+    // kinesthetic 5题
+    {dim:'kinesthetic',text:'你热爱体育运动，坚持规律训练'},
+    {dim:'kinesthetic',text:'学习一项新运动技能，你领悟很快且反复练习'},
+    {dim:'kinesthetic',text:'你的精细动作（写字、画画、手工）很灵巧'},
+    {dim:'kinesthetic',text:'你有一项坚持练习超过一年的运动'},
+    {dim:'kinesthetic',text:'在团队运动中，你是核心成员'},
+    // musical 5题
+    {dim:'musical',text:'你能听出一首歌的节拍和旋律变化，非常敏锐'},
+    {dim:'musical',text:'你对音乐创作有兴趣，而且尝试过'},
+    {dim:'musical',text:'你学习乐器或声乐已经2年以上，仍在坚持'},
+    {dim:'musical',text:'音乐对你的情绪影响非常大，能调节你的心情'},
+    {dim:'musical',text:'你能分辨出很多种不同的音乐风格'},
+    // interpersonal 5题
+    {dim:'interpersonal',text:'在班级里，你是组织者或社交桥梁'},
+    {dim:'interpersonal',text:'团队意见分歧时，你善于协调找到共识'},
+    {dim:'interpersonal',text:'你对别人的情绪和动机非常敏感'},
+    {dim:'interpersonal',text:'你经常担任班干部或活动负责人'},
+    {dim:'interpersonal',text:'帮助别人解决问题，你很擅长且有热情'},
+    // intrapersonal 5题
+    {dim:'intrapersonal',text:'你很清楚什么学习方法适合自己'},
+    {dim:'intrapersonal',text:'面对挫折你能很快调整心态'},
+    {dim:'intrapersonal',text:'你有经常自我反思的习惯'},
+    {dim:'intrapersonal',text:'你经常设置目标并坚持完成'},
+    {dim:'intrapersonal',text:'独处时你会规划、阅读、思考'},
+    // naturalist 5题
+    {dim:'naturalist',text:'你对生态系统和物种分类非常感兴趣，会自己查资料'},
+    {dim:'naturalist',text:'你在户外观察自然的能力很敏锐，能发现细节'},
+    {dim:'naturalist',text:'你积极参与环保行动'},
+    {dim:'naturalist',text:'你独立完成过自然观察日记或标本收集，且持续在做'},
+    {dim:'naturalist',text:'你对农业、园艺、动物行为等知识很感兴趣，读了很多'}
+  ],
+
+  '12-18': [
+    // linguistic 5题
+    {dim:'linguistic',text:'如果让你创办社团，你会选择辩论社或文学社'},
+    {dim:'linguistic',text:'阅读有深度的书时，你会沉浸其中并做笔记'},
+    {dim:'linguistic',text:'课堂上讨论有争议的话题，你会积极发言且有理有据'},
+    {dim:'linguistic',text:'写文章时，你更在意观点是否深刻和逻辑是否严谨'},
+    {dim:'linguistic',text:'学习新词汇或外语时，你非常投入且学得很快'},
+    // logical 5题
+    {dim:'logical',text:'遇到复杂的逻辑谜题，你会非常兴奋地钻研'},
+    {dim:'logical',text:'做科学实验时，你会主动设计实验来验证假设'},
+    {dim:'logical',text:'你对数学中"为什么这样算"非常好奇，会自己研究'},
+    {dim:'logical',text:'规划旅行时，你会详细规划路线和预算'},
+    {dim:'logical',text:'分析数据和图表，你能很快找到规律'},
+    // spatial 5题
+    {dim:'spatial',text:'如果要重新布置房间，你在脑中就能设计好方案'},
+    {dim:'spatial',text:'学习几何时，你的空间想象力很强'},
+    {dim:'spatial',text:'你尝试过3D建模或建筑设计，而且很喜欢'},
+    {dim:'spatial',text:'看建筑或室内设计图，你很有感觉能看懂'},
+    {dim:'spatial',text:'玩迷宫或空间解谜游戏，你非常擅长'},
+    // kinesthetic 5题
+    {dim:'kinesthetic',text:'你热爱体育运动，坚持规律训练'},
+    {dim:'kinesthetic',text:'学习一项新运动技能，你领悟很快且反复练习'},
+    {dim:'kinesthetic',text:'你的精细动作（写字、画画、手工）很灵巧'},
+    {dim:'kinesthetic',text:'你有一项坚持练习超过一年的运动'},
+    {dim:'kinesthetic',text:'在团队运动中，你是核心成员'},
+    // musical 5题
+    {dim:'musical',text:'你能听出一首歌的节拍和旋律变化，非常敏锐'},
+    {dim:'musical',text:'你对音乐创作有兴趣，而且尝试过'},
+    {dim:'musical',text:'你学习乐器或声乐已经2年以上，仍在坚持'},
+    {dim:'musical',text:'音乐对你的情绪影响非常大，能调节你的心情'},
+    {dim:'musical',text:'你能分辨出很多种不同的音乐风格'},
+    // interpersonal 5题
+    {dim:'interpersonal',text:'在班级里，你是组织者或社交桥梁'},
+    {dim:'interpersonal',text:'团队意见分歧时，你善于协调找到共识'},
+    {dim:'interpersonal',text:'你对别人的情绪和动机非常敏感'},
+    {dim:'interpersonal',text:'你经常担任班干部或活动负责人'},
+    {dim:'interpersonal',text:'帮助别人解决问题，你很擅长且有热情'},
+    // intrapersonal 5题
+    {dim:'intrapersonal',text:'你很清楚什么学习方法适合自己'},
+    {dim:'intrapersonal',text:'面对挫折你能很快调整心态'},
+    {dim:'intrapersonal',text:'你有经常自我反思的习惯'},
+    {dim:'intrapersonal',text:'你经常设置目标并坚持完成'},
+    {dim:'intrapersonal',text:'独处时你会规划、阅读、思考'},
+    // naturalist 5题
+    {dim:'naturalist',text:'你对生态系统和物种分类非常感兴趣，会自己查资料'},
+    {dim:'naturalist',text:'你在户外观察自然的能力很敏锐，能发现细节'},
+    {dim:'naturalist',text:'你积极参与环保行动'},
+    {dim:'naturalist',text:'你独立完成过自然观察日记或标本收集，且持续在做'},
+    {dim:'naturalist',text:'你对农业、园艺、动物行为等知识很感兴趣，读了很多'},
+    // 霍兰德附加8题
+    {dim:'holland',text:'你更喜欢哪种类型的工作？',options:[{text:'动手制作或修理',type:'R'},{text:'研究分析问题',type:'I'},{text:'创意设计和表达',type:'A'},{text:'帮助或指导他人',type:'S'}]},
+    {dim:'holland',text:'如果参加社会实践活动，你会选择？',options:[{text:'组织策划',type:'E'},{text:'按流程执行',type:'C'},{text:'自由探索',type:'A'},{text:'服务他人',type:'S'}]},
+    {dim:'holland',text:'你更看重工作中的什么？',options:[{text:'独立性创造空间',type:'A'},{text:'稳定可预期',type:'C'},{text:'影响力领导力',type:'E'},{text:'发现真理',type:'I'}]},
+    {dim:'holland',text:'你在团队中更倾向什么角色？',options:[{text:'提出新想法',type:'A'},{text:'制定规则流程',type:'C'},{text:'带领大家',type:'E'},{text:'解决技术问题',type:'I'}]},
+    {dim:'holland',text:'你对哪种课程最有热情？',options:[{text:'文学艺术类',type:'A'},{text:'数理科学类',type:'I'},{text:'商业管理类',type:'E'},{text:'社会心理类',type:'S'}]},
+    {dim:'holland',text:'空闲时间你最可能做什么？',options:[{text:'做手工或运动',type:'R'},{text:'阅读科普或研究',type:'I'},{text:'画画写歌',type:'A'},{text:'和朋友聊天',type:'S'}]},
+    {dim:'holland',text:'你觉得最理想的职业环境是？',options:[{text:'自由灵活',type:'A'},{text:'有序规范',type:'C'},{text:'竞争挑战',type:'E'},{text:'合作和谐',type:'S'}]},
+    {dim:'holland',text:'面对社会问题，你更想怎么做？',options:[{text:'深入调查分析',type:'I'},{text:'提出创新方案',type:'A'},{text:'组织行动推动',type:'E'},{text:'直接帮助受影响的人',type:'S'}]}
+  ]
+};
+
+// ==================== 天赋解读文案库 ====================
+const INTERPRETATION = {
+  linguistic: {
+    high: '语言天赋突出！孩子对文字有天然的敏感度，善于用语言表达思想和情感。这是学习、沟通和创造力的基石。',
+    mid: '语言能力发展良好，有一定的表达欲望和文字理解力。通过丰富的阅读和表达练习，这个维度还有很大提升空间。',
+    low: '语言维度目前表现不太突出，但这绝不代表能力不足。很多孩子是"晚开的花"，多创造轻松的表达氛围会有惊喜。'
+  },
+  logical: {
+    high: '逻辑数理天赋亮眼！孩子对因果关系、数量关系和抽象推理有出色的直觉。这是数学、科学和编程的天然土壤。',
+    mid: '逻辑思维发展良好，能进行基本的推理和分析。通过趣味数学和科学小实验，这个能力可以进一步激发。',
+    low: '逻辑数理维度目前表现一般，不必焦虑。逻辑思维可以通过日常游戏（棋类、桌游）和生活实践逐步培养。'
+  },
+  spatial: {
+    high: '空间视觉天赋出众！孩子对形状、方位和空间关系有敏锐的感知。这是建筑、设计、工程等领域的潜在优势。',
+    mid: '空间想象力发展良好，有一定的方位感和图形理解力。通过积木、绘画和地图游戏可以继续发展。',
+    low: '空间维度目前不太突出，但空间能力是可以通过训练显著提升的。拼图、搭建和方位游戏都是好方法。'
+  },
+  kinesthetic: {
+    high: '身体动觉天赋卓越！孩子对身体的控制和协调能力出色，动手能力强。这是运动、舞蹈、外科等领域的基础。',
+    mid: '身体协调性发展良好，有一定的运动兴趣和动手能力。鼓励坚持一项运动或手工爱好，会收获更多。',
+    low: '动觉维度目前表现一般，多提供运动和手工的机会，在轻松愉快的环境中身体智能会逐渐展现。'
+  },
+  musical: {
+    high: '音乐韵律天赋出众！孩子对节奏、旋律和音色有敏锐的感知力，这是音乐创作和表演的珍贵天赋。',
+    mid: '音乐感知力发展良好，有一定的节奏感和音乐兴趣。接触更多音乐类型和基础乐器学习会有帮助。',
+    low: '音乐维度目前不太突出，但音乐能力可以在任何时候开始培养。从听喜欢的音乐开始，兴趣会慢慢生长。'
+  },
+  interpersonal: {
+    high: '人际社交天赋出众！孩子善于理解他人、协调关系，是天生的"社交小达人"。这是领导力和团队合作的基石。',
+    mid: '社交能力发展良好，能和同伴正常交往。创造更多团队活动的机会，人际智能会进一步发展。',
+    low: '人际维度目前不太突出，有些孩子天生偏内向。尊重孩子的社交节奏，在安全的环境中逐步拓展社交圈。'
+  },
+  intrapersonal: {
+    high: '内省自省天赋卓越！孩子对自我有清晰的认知，能独立思考和管理情绪。这是自律和自我驱动的核心。',
+    mid: '自我认知发展良好，有一定的反思习惯和目标意识。通过写日记和设定小目标可以继续深化。',
+    low: '内省维度目前表现一般，这和孩子年龄有关。通过示范和引导，帮助孩子学会识别和表达情绪是第一步。'
+  },
+  naturalist: {
+    high: '自然观察天赋出众！孩子对动植物和自然环境有浓厚的兴趣和敏锐的观察力。这是生态、农业、环境科学的种子。',
+    mid: '自然观察力发展良好，对自然有一定兴趣。多提供户外探索和自然纪录片的机会，会进一步激发。',
+    low: '自然维度目前不太突出，在城市生活中这很常见。创造接触自然的机会，孩子的兴趣可能会被点燃。'
+  }
+};
+
+// ==================== 行为特征（每个维度高分行为特征）====================
+const BEHAVIOR_TRAITS = {
+  linguistic: '喜欢讲故事、词汇丰富、善于模仿语气、爱问"然后呢"',
+  logical: '爱问"为什么"、喜欢数数和排序、能发现规律',
+  spatial: '爱搭积木造型、方向感好、画画内容丰富',
+  kinesthetic: '跑跳攀爬活跃、手指灵活、喜欢模仿动作',
+  musical: '自然跟着节奏摇摆、辨别乐器声音、自编自唱',
+  interpersonal: '受同伴欢迎、主动安慰别人、理解表情变化',
+  intrapersonal: '能独处自娱、表达情绪、有明确偏好坚持',
+  naturalist: '爱观察动植物、喜欢户外探索、注意天气变化'
+};
+
+// ==================== 完整落地文案库 ====================
+const COMPLETE_GUIDE = {
+  linguistic: {
+    traits: '听觉敏感、爱表达、爱讲故事、理解力强、共情强',
+    daily: {
+      '3-6': ['每天复述1段绘本', '词语接龙游戏', '角色扮演故事', '看图说话训练', '睡前故事续编'],
+      '6-9': ['每日朗读10分钟', '一句话日记', '改写小故事', '成语接龙', '家庭新闻播报'],
+      '9-12': ['写读后感', '练演讲3分钟', '口头复述知识点', '辩论练习', '故事续写'],
+      '12-18': ['结构化写作', '辩论实战', '文案练习', '观点表达', '公众号文章写作']
+    },
+    suitableClasses: ['口才班', '播音主持', '作文写作', '阅读理解', '英语学习', '戏剧表演'],
+    unsuitableClasses: ['高强度纯理科刷题班', '机械记忆背诵班'],
+    books: {
+      '3-6': ['《猜猜我有多爱你》', '《好饿的毛毛虫》', '《逃家小兔》', '《爷爷一定有办法》', '《大卫上学去》'],
+      '6-9': ['《窗边的小豆豆》', '《夏洛的网》', '《爱的教育》', '《柳林风声》', '《了不起的狐狸爸爸》'],
+      '9-12': ['《小王子》', '《哈利波特》', '《草房子》', '《城南旧事》', '《三国演义》青少版'],
+      '12-18': ['《红楼梦》', '《百年孤独》', '《人类简史》', '《非暴力沟通》', '《影响力》']
+    },
+    furtherStudy: '语文、英语、文科极强，写作和表达能力突出',
+    subjects: '高中适合选科：语文、英语、历史、政治、地理',
+    majors: '汉语言文学、新闻学、传播学、教育学、法学、播音主持、外语专业',
+    careers: '教师、主播、编剧、律师、文案策划、主持人、心理咨询师、编辑、记者'
+  },
+  logical: {
+    traits: '爱思考、爱问为什么、喜欢推理、观察力强、逻辑清晰、专注力强',
+    daily: {
+      '3-6': ['分类游戏', '排序活动', '迷宫挑战', '数感游戏', '找规律'],
+      '6-9': ['生活数学应用', '零花钱记账', '简单科学实验', '数独入门', '扑克牌算24'],
+      '9-12': ['思维训练题', '逻辑推理题', '规律探究', '编程入门', '数学建模'],
+      '12-18': ['物理化学探究', '编程进阶', '数据分析', '算法学习', '数学竞赛']
+    },
+    suitableClasses: ['数学思维班', '编程课', '围棋班', '科学实验班', '机器人课程'],
+    unsuitableClasses: ['纯记忆类背诵班', '死记硬背补习班'],
+    books: {
+      '3-6': ['《数学帮帮忙》', '《逻辑狗》', '《神奇校车》数学篇', '《汉声数学图画书》', '《数学启蒙系列》'],
+      '6-9': ['《可怕的科学·数学系列》', '《数学魔咒》', '《科学好好玩》', '《DK儿童数学大百科》', '《数学真好玩》'],
+      '9-12': ['《从一到无穷大》', '《数学之美》', '《编程真好玩》', '《科学世界》', '《科学美国人》青少版'],
+      '12-18': ['《算法导论》', '《数学分析》', '《费马大定理》', '《时间简史》', '《科学发现者》']
+    },
+    furtherStudy: '数学、物理、计算机、理科拔尖，逻辑思维和问题解决能力强',
+    subjects: '高中适合选科：数学、物理、化学、生物、信息技术',
+    majors: '计算机科学、软件工程、人工智能、金融学、统计学、物理学、医学',
+    careers: '程序员、软件工程师、数据科学家、金融分析师、科研人员、医生、工程师'
+  },
+  spatial: {
+    traits: '记性好、看图极强、想象力丰富、方向感好、擅长画画构图、创造力强',
+    daily: {
+      '3-6': ['拼图游戏', '积木搭建', '临摹画画', '手绘涂鸦', '观察构图'],
+      '6-9': ['迷宫挑战', '折纸手工', '地图绘制', '立体拼图', '摄影构图'],
+      '9-12': ['素描练习', '透视画法', '3D建模', '设计草图', '空间推理'],
+      '12-18': ['CAD设计', '建筑设计', 'UI设计', '动画制作', '空间规划']
+    },
+    suitableClasses: ['美术班', '素描班', '动漫设计', '建筑设计', '手工班', '乐高搭建'],
+    unsuitableClasses: ['纯理论背诵班', '枯燥刷题班'],
+    books: {
+      '3-6': ['《寻找薇薇安》', '《变焦》', '《建筑师小弗兰克》', '《形状三部曲》', '《颜色的秘密》'],
+      '6-9': ['《建筑的故事》', '《了不起的工程师》', '《神奇校车》空间篇', '《DK儿童艺术大百科》', '《我的第一本艺术书》'],
+      '9-12': ['《设计中的设计》', '《建筑十书》青少版', '《写给大家看的设计书》', '《透视入门》', '《色彩理论》'],
+      '12-18': ['《建筑的永恒之道》', '《城市意象》', '《设计心理学》', '《写给设计师的色彩书》', '《交互设计精髓》']
+    },
+    furtherStudy: '美术、设计、建筑、空间规划等视觉相关学科优势明显',
+    subjects: '高中适合选科：美术、物理、数学、信息技术',
+    majors: '视觉传达设计、建筑学、园林设计、动画设计、摄影、UI/UX设计',
+    careers: '设计师、建筑师、插画师、摄影师、UI设计师、艺术总监、景观设计师'
+  },
+  kinesthetic: {
+    traits: '精力旺盛、手脚灵活、动手强、坐不住、运动天赋高、协调性好',
+    daily: {
+      '3-6': ['感统训练', '跳绳练习', '球类运动', '手工制作', '体能游戏'],
+      '6-9': ['舞蹈练习', '武术基础', '球类训练', '陶艺手工', '平衡训练'],
+      '9-12': ['专项运动', '器械训练', '手工创作', '体能提升', '运动技巧'],
+      '12-18': ['专业运动训练', '健身计划', '极限运动', '康复训练', '运动心理学']
+    },
+    suitableClasses: ['舞蹈班', '武术班', '体育训练', '球类俱乐部', '模特班', '陶艺班'],
+    unsuitableClasses: ['久坐不动的纯理论班', '长时间静态课程'],
+    books: {
+      '3-6': ['《从头动到脚》', '《蹦！》', '《我的第一本运动书》', '《身体的秘密》', '《运动真奇妙》'],
+      '6-9': ['《我的身体了不起》', '《体育全百科》', '《运动明星传记》', '《奥林匹克精神》', '《儿童运动指南》'],
+      '9-12': ['《运动解剖学》青少年版', '《体育心理学》', '《运动训练学》', '《篮球/足球战术分析》', '《运动营养学》'],
+      '12-18': ['《运动生理学》', '《巅峰体验》', '《运动损伤防护》', '《体育社会学》', '《力量训练基础》']
+    },
+    furtherStudy: '体育、舞蹈、表演、医学等需要身体协调的学科优势',
+    subjects: '高中适合选科：体育、生物、物理、化学',
+    majors: '体育教育、运动训练、舞蹈表演、康复治疗、临床医学、机械工程',
+    careers: '运动员、舞蹈演员、教练、物理治疗师、外科医生、手工匠人、模特'
+  },
+  musical: {
+    traits: '听音准、节奏感强、爱哼唱、对声音敏感、乐感好、记忆力强',
+    daily: {
+      '3-6': ['节奏游戏', '听歌识曲', '律动练习', '乐器模仿', '音乐欣赏'],
+      '6-9': ['基础乐器练习', '视唱练耳', '节奏训练', '歌曲学唱', '音乐风格探索'],
+      '9-12': ['乐器进阶', '乐理学习', '和声基础', '歌曲创作', '音乐分析'],
+      '12-18': ['音乐制作', '编曲创作', '录音混音', '音乐理论', '音乐表演']
+    },
+    suitableClasses: ['钢琴班', '声乐班', '古筝班', '吉他班', '合唱队', '编曲课'],
+    unsuitableClasses: ['纯机械记忆班', '无音乐环境的枯燥课程'],
+    books: {
+      '3-6': ['《好安静的蟋蟀》', '《音乐小鼠》', '《听，什么声音》', '《我的第一本音乐书》', '《乐器大百科》'],
+      '6-9': ['《音乐的故事》', '《乐器大百科》', '《杰出音乐家传记》', '《儿童乐理入门》', '《音乐素养》'],
+      '9-12': ['《西方音乐史》青少年版', '《音乐与大脑》', '《怎样欣赏音乐》', '《基本乐理通用教材》', '《和声学基础》'],
+      '12-18': ['《音乐欣赏》', '《和声学》', '《流行音乐创作》', '《音乐心理学》', '《录音技术基础》']
+    },
+    furtherStudy: '音乐、艺术、表演等学科优势明显',
+    subjects: '高中适合选科：音乐、美术、语文、历史',
+    majors: '音乐表演、音乐教育、作曲与作曲技术理论、录音艺术、音乐学',
+    careers: '音乐家、音乐教师、作曲家、编曲师、录音师、音乐制作人、歌唱家'
+  },
+  interpersonal: {
+    traits: '会沟通、会共情、会带人、会处理矛盾、受欢迎、领导力强',
+    daily: {
+      '3-6': ['团队游戏', '表达观点', '分享活动', '角色扮演', '情感表达'],
+      '6-9': ['组织活动', '小组合作', '冲突调解', '志愿服务', '公众表达'],
+      '9-12': ['团队领导', '沟通技巧', '项目管理', '社区服务', '演讲练习'],
+      '12-18': ['社会活动', '领导力培养', '跨文化沟通', '公众演讲', '团队建设']
+    },
+    suitableClasses: ['主持人班', '社团活动', '演讲班', '社会实践', '领导力课程'],
+    unsuitableClasses: ['孤立无互动的个人课程', '缺乏团队协作的训练'],
+    books: {
+      '3-6': ['《你看起来好像很好吃》', '《彩虹色的花》', '《我有友情要出租》', '《学会分享》', '《情绪管理绘本》'],
+      '6-9': ['《夏洛的网》', '《爱的教育》', '《窗边的小豆豆》', '《团队合作故事》', '《沟通的艺术》'],
+      '9-12': ['《人性的弱点》青少年版', '《非暴力沟通》', '《领导力》青少年版', '《社交心理学》', '《关键对话》'],
+      '12-18': ['《影响力》', '《关键对话》', '《社会心理学》', '《情商》', '《高效能人士的七个习惯》']
+    },
+    furtherStudy: '管理、教育、社工、市场营销等与人打交道的学科优势',
+    subjects: '高中适合选科：政治、历史、地理、英语、生物',
+    majors: '工商管理、社会工作、教育学、人力资源管理、市场营销、心理学',
+    careers: '管理者、教师、销售经理、HR总监、主持人、社工、心理咨询师、公关专家'
+  },
+  intrapersonal: {
+    traits: '自律、安静、爱思考、悟性高、自我要求高、专注力强、独立思考',
+    daily: {
+      '3-6': ['自由探索', '情绪识别', '自我选择', '安静阅读', '目标设定'],
+      '6-9': ['写日记', '复盘反思', '目标规划', '情绪管理', '自我评估'],
+      '9-12': ['深度思考', '计划执行', '时间管理', '自我反思', '学习方法'],
+      '12-18': ['自我规划', '职业探索', '人生目标', '心理成长', '自我超越']
+    },
+    suitableClasses: ['自学型课程', '研究型项目', '心理健康课程', '目标管理', '哲学思维'],
+    unsuitableClasses: ['过度约束的课程', '缺乏自主性的填鸭式教学'],
+    books: {
+      '3-6': ['《我的情绪小怪兽》', '《我变成一只喷火龙了》', '《猜猜我在想什么》', '《学会认识自己》', '《自信的故事》'],
+      '6-9': ['《写给自己的信》', '《自信心培养故事》', '《我的第一本情绪日记》', '《思考的乐趣》', '《自我认知绘本》'],
+      '9-12': ['《自控力》青少年版', '《思考，快与慢》简化版', '《发现你的优势》', '《被讨厌的勇气》', '《活出生命的意义》'],
+      '12-18': ['《原则》', '《被讨厌的勇气》', '《思考，快与慢》', '《人类简史》', '《苏菲的世界》']
+    },
+    furtherStudy: '心理学、哲学、科研、需要深度思考的学科优势',
+    subjects: '高中适合选科：历史、政治、生物、语文、数学',
+    majors: '心理学、哲学、社会学、教育学、科研相关专业',
+    careers: '科研人员、心理咨询师、哲学家、学者、深度思考型人才、作家、顾问'
+  },
+  naturalist: {
+    traits: '喜欢动植物、爱观察、好奇心强、爱探索自然、观察力敏锐、环保意识强',
+    daily: {
+      '3-6': ['种植观察', '天气记录', '昆虫观察', '户外探索', '自然拼图'],
+      '6-9': ['自然日记', '动植物识别', '生态观察', '环保行动', '户外徒步'],
+      '9-12': ['系统观察', '标本制作', '生态研究', '环保项目', '野外考察'],
+      '12-18': ['科研项目', '生态调研', '环保倡导', '自然保护', '学科探索']
+    },
+    suitableClasses: ['科学实验', '自然研学', '生物实验', '环保社团', '户外探索'],
+    unsuitableClasses: ['纯室内理论课', '远离自然的枯燥课程'],
+    books: {
+      '3-6': ['《小种子》', '《一粒种子的旅行》', '《昆虫记》绘本版', '《DK儿童自然大百科》', '《我的第一本自然书》'],
+      '6-9': ['《昆虫记》青少年版', '《森林报》', '《神奇校车》自然篇', '《自然观察入门》', '《植物图鉴》'],
+      '9-12': ['《寂静的春天》', '《所罗门王的指环》', '《自然观察入门》', '《生态学》', '《动物行为学》'],
+      '12-18': ['《沙乡年鉴》', '《枪炮、病菌与钢铁》', '《生态学基础》', '《物种起源》', '《自然哲学的数学原理》']
+    },
+    furtherStudy: '生物、环境、农学、地理、天文、医学等自然科学优势',
+    subjects: '高中适合选科：生物、化学、地理、物理、数学',
+    majors: '生物学、环境科学、农学、地理学、天文学、临床医学',
+    careers: '科学家、医生、动植物专家、环境工程师、生物学家、地质学家、环保工作者'
+  }
+};
+
+// ==================== 低分弱维度温柔引导方案 ====================
+const WEAK_GUIDE = {
+  linguistic: {
+    mindset: '语言智能较弱不代表孩子"笨"，很多孩子是"晚开的花"，语言能力可以通过游戏化方式逐步培养。',
+    lightTraining: ['每天亲子阅读10分钟（家长读，孩子听）', '玩简单的词语接龙游戏', '鼓励孩子用图画表达想法', '日常对话多问开放式问题', '听故事后鼓励复述关键情节'],
+    positiveMessage: '你愿意尝试表达就很棒！我们一起慢慢练习，你的想法很有趣。'
+  },
+  logical: {
+    mindset: '逻辑思维较弱不代表孩子"不聪明"，逻辑能力是可以通过日常游戏和生活实践逐步提升的。',
+    lightTraining: ['玩分类整理游戏（按颜色、形状、大小）', '日常让孩子参与简单计算（分水果、数物品）', '玩拼图和走迷宫游戏', '做简单的科学小实验', '玩扑克牌游戏（比大小、算24）'],
+    positiveMessage: '你愿意尝试就很棒！这个问题有点难，我们一起找到方法。'
+  },
+  spatial: {
+    mindset: '空间能力较弱不代表孩子"没天赋"，通过拼图、搭建等游戏可以显著提升空间想象力。',
+    lightTraining: ['从简单拼图开始（4-6块）', '玩积木自由搭建', '画简单的画（涂鸦也可以）', '认路和方向游戏', '玩折纸手工'],
+    positiveMessage: '你的想象力很丰富！我们一起用积木创造有趣的东西。'
+  },
+  kinesthetic: {
+    mindset: '动觉能力较弱不代表孩子"笨拙"，每个孩子的身体发展节奏不同，通过有趣的运动游戏可以逐步提升。',
+    lightTraining: ['每天户外活动20分钟', '玩简单的抛接球游戏', '做手指操锻炼精细动作', '跳舞和律动游戏', '尝试简单的手工制作'],
+    positiveMessage: '运动是为了快乐！我们一起慢慢练习，你做得比上次更好了。'
+  },
+  musical: {
+    mindset: '音乐能力较弱不代表孩子"五音不全"，音乐兴趣和能力可以在任何时候开始培养。',
+    lightTraining: ['听喜欢的音乐跟着节奏拍手', '玩打击乐器（锅碗瓢盆也可以）', '学唱简单的儿歌', '跟着音乐跳舞', '玩"听音辨动物"游戏'],
+    positiveMessage: '音乐是用来享受的！你唱得很投入，这就是最好的。'
+  },
+  interpersonal: {
+    mindset: '人际智能较弱不代表孩子"不合群"，有些孩子天生偏内向，尊重孩子的社交节奏最重要。',
+    lightTraining: ['从一对一交往开始', '玩角色扮演游戏理解他人感受', '鼓励表达自己的情绪', '参与家庭决策讨论', '养小动物学习关爱'],
+    positiveMessage: '每个人都有自己的交友方式，你很真诚，这很棒！'
+  },
+  intrapersonal: {
+    mindset: '内省智能较弱不代表孩子"不自律"，这和年龄相关，通过示范和引导可以逐步发展自我认知。',
+    lightTraining: ['帮助孩子认识自己的情绪（用情绪卡片）', '每天花5分钟安静独处', '鼓励孩子做简单的选择', '一起回顾一天的经历', '写简单的心情日记'],
+    positiveMessage: '你很清楚自己的感受，这很重要！我们一起学会管理情绪。'
+  },
+  naturalist: {
+    mindset: '自然智能较弱不代表孩子"不喜欢自然"，在城市生活中这很常见，创造接触自然的机会就好。',
+    lightTraining: ['阳台种一盆植物', '观察家里的宠物或昆虫', '看自然纪录片', '周末去公园散步观察', '收集树叶和石头'],
+    positiveMessage: '大自然很有趣！我们一起发现身边的小生命。'
+  }
+};
+
+// ==================== 家长沟通话术 ====================
+const PRAISE_TEMPLATES = [
+  '我注意到你在这件事上付出了很多努力，这种坚持比结果更让我欣赏。',
+  '你尝试了不同的方法来解决这个问题，这种探索精神太棒了！',
+  '我看到了你从不会到会的进步过程，这才是最了不起的。',
+  '即使没成功，你愿意去尝试本身就很勇敢，我们一起想想怎么调整。',
+  '你花了这么多时间练习，这份专注和毅力让我很感动。'
+];
+
+const GUIDE_TEMPLATES = [
+  '这个领域对你来说可能有点挑战，但每次小小的尝试都是进步，我们一起慢慢来。',
+  '每个人都有擅长和不那么擅长的事情，重要的是保持好奇心去体验。',
+  '我看到你在这件事上有些犹豫，没关系，我们换个有趣的方式试试？',
+  '做不好不代表你不好，只是还没找到适合你的方法，我们一起来发现。',
+  '成长就像种花，有的花开得早有的花开得晚，只要浇灌耐心，花总会开的。'
+];
+
+// ==================== 维度专属沟通话术 ====================
+const DIMENSION_PRAISE = {
+  linguistic: [
+    '你的表达越来越清晰了，这个故事讲得很生动！',
+    '我很喜欢听你分享读书的感受，你的见解很独特。'
+  ],
+  logical: [
+    '你发现了这个规律，这个思考过程太棒了！',
+    '你用自己的方法解决了这个问题，很有创意！'
+  ],
+  spatial: [
+    '你画的这幅画构图很棒，想象力很丰富！',
+    '这个积木搭得很有想法，空间感真好！'
+  ],
+  kinesthetic: [
+    '你运动时的协调性越来越好了，进步很大！',
+    '这个手工做得很精致，动手能力真强！'
+  ],
+  musical: [
+    '你唱歌的节奏感很好，听得很舒服！',
+    '你对音乐很敏感，能听出这么多细节！'
+  ],
+  interpersonal: [
+    '你很会关心别人，朋友都很喜欢你！',
+    '你处理矛盾的方式很成熟，很会沟通！'
+  ],
+  intrapersonal: [
+    '你很清楚自己的目标，这份自律很可贵！',
+    '你反思得很深入，这是成长的重要一步！'
+  ],
+  naturalist: [
+    '你观察得很仔细，发现了这么多有趣的细节！',
+    '你对自然的热爱很珍贵，继续探索吧！'
+  ]
+};
+
+const DIMENSION_GUIDE = {
+  linguistic: [
+    '语言表达需要练习，我们每天讲一个小故事就好。',
+    '不用急着完美表达，先把想法说出来就是进步。'
+  ],
+  logical: [
+    '逻辑思维可以慢慢培养，我们从玩游戏开始吧。',
+    '遇到难题没关系，我们一起拆解成小问题。'
+  ],
+  spatial: [
+    '空间想象力可以通过拼图和画画来锻炼，我们一起玩。',
+    '方向感不好很正常，我们多玩认路游戏就会进步。'
+  ],
+  kinesthetic: [
+    '运动能力需要慢慢培养，我们先从喜欢的运动开始。',
+    '协调性可以通过小游戏来锻炼，不用着急。'
+  ],
+  musical: [
+    '音乐是用来享受的，不用在意唱得好不好听。',
+    '节奏感可以通过拍手和跳舞来练习，很有趣！'
+  ],
+  interpersonal: [
+    '社交节奏每个人都不同，尊重自己的感觉最重要。',
+    '不用强迫自己社交，从熟悉的人开始就好。'
+  ],
+  intrapersonal: [
+    '自我认知需要时间，我们慢慢了解自己。',
+    '情绪管理是每个人的课题，我们一起学习。'
+  ],
+  naturalist: [
+    '城市里接触自然机会少，我们创造机会就好。',
+    '对自然的兴趣可以慢慢培养，从身边的小生命开始。'
+  ]
+};
+
+// ==================== 页面切换 ====================
+function showPage(pageId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(pageId).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ==================== 年龄段选择 ====================
+function selectAge(el) {
+  document.querySelectorAll('.age-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  state.age = el.dataset.age;
+  const btn = document.getElementById('btn-start-test');
+  btn.disabled = false;
+  btn.classList.remove('opacity-50', 'cursor-not-allowed');
+}
+
+// ==================== 开始答题 ====================
+function startTest() {
+  if (!state.age) return;
+  state.questions = QUESTION_BANKS[state.age];
+  state.answers = {};
+  state.currentQ = 0;
+
+  // 尝试恢复进度
+  const savedAge = localStorage.getItem('talent_age');
+  const savedAnswers = localStorage.getItem('talent_answers');
+  const savedCurrent = localStorage.getItem('talent_current');
+  if (savedAge === state.age && savedAnswers) {
+    try {
+      state.answers = JSON.parse(savedAnswers);
+      state.currentQ = parseInt(savedCurrent) || 0;
+    } catch(e) {}
+  }
+
+  localStorage.setItem('talent_age', state.age);
+  showPage('page-test');
+  renderQuestion();
+}
+
+// ==================== 渲染题目 ====================
+function renderQuestion() {
+  const q = state.questions[state.currentQ];
+  if (!q) return;
+
+  const total = state.questions.length;
+  const current = state.currentQ + 1;
+
+  // 更新进度条
+  document.getElementById('progress-bar').style.width = (current / total * 100) + '%';
+  document.getElementById('question-number').textContent = current + '/' + total;
+
+  // 更新维度标签
+  const dimInfo = DIMENSIONS.find(d => d.key === q.dim);
+  const tagEl = document.getElementById('dimension-tag');
+  if (dimInfo) {
+    tagEl.textContent = dimInfo.icon + ' ' + dimInfo.name;
+    tagEl.style.display = '';
+  } else if (q.dim === 'holland') {
+    tagEl.textContent = '🎯 霍兰德职业';
+    tagEl.style.display = '';
+  } else {
+    tagEl.style.display = 'none';
+  }
+
+  // 更新题干
+  document.getElementById('question-text').textContent = q.text;
+
+  // 更新SVG小插图
+  const iconContainer = document.getElementById('question-icon');
+  const dimIcons = {
+    linguistic: '<svg width="60" height="60" viewBox="0 0 60 60"><rect x="10" y="8" width="40" height="44" rx="4" fill="#FFE4B5"/><line x1="18" y1="18" x2="42" y2="18" stroke="#DAA520" stroke-width="2"/><line x1="18" y1="26" x2="38" y2="26" stroke="#DAA520" stroke-width="2"/><line x1="18" y1="34" x2="40" y2="34" stroke="#DAA520" stroke-width="2"/><line x1="18" y1="42" x2="30" y2="42" stroke="#DAA520" stroke-width="2"/></svg>',
+    logical: '<svg width="60" height="60" viewBox="0 0 60 60"><text x="30" y="38" text-anchor="middle" font-size="32" fill="#87CEEB">π</text></svg>',
+    spatial: '<svg width="60" height="60" viewBox="0 0 60 60"><polygon points="30,8 52,48 8,48" fill="none" stroke="#A29BFE" stroke-width="3"/><polygon points="30,20 44,44 16,44" fill="#A29BFE" opacity="0.3"/></svg>',
+    kinesthetic: '<svg width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="14" r="8" fill="#FFB6C1"/><line x1="30" y1="22" x2="30" y2="40" stroke="#FFB6C1" stroke-width="3"/><line x1="30" y1="28" x2="18" y2="36" stroke="#FFB6C1" stroke-width="3"/><line x1="30" y1="28" x2="42" y2="36" stroke="#FFB6C1" stroke-width="3"/><line x1="30" y1="40" x2="20" y2="54" stroke="#FFB6C1" stroke-width="3"/><line x1="30" y1="40" x2="40" y2="54" stroke="#FFB6C1" stroke-width="3"/></svg>',
+    musical: '<svg width="60" height="60" viewBox="0 0 60 60"><text x="30" y="40" text-anchor="middle" font-size="36" fill="#98FB98">♪</text></svg>',
+    interpersonal: '<svg width="60" height="60" viewBox="0 0 60 60"><circle cx="22" cy="20" r="8" fill="#FDCB6E"/><circle cx="38" cy="20" r="8" fill="#87CEEB"/><path d="M14,32 Q22,28 30,32" fill="none" stroke="#FDCB6E" stroke-width="2"/><path d="M30,32 Q38,28 46,32" fill="none" stroke="#87CEEB" stroke-width="2"/></svg>',
+    intrapersonal: '<svg width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="18" fill="none" stroke="#A29BFE" stroke-width="2"/><circle cx="30" cy="30" r="8" fill="#A29BFE" opacity="0.3"/><text x="30" y="35" text-anchor="middle" font-size="14" fill="#A29BFE">✦</text></svg>',
+    naturalist: '<svg width="60" height="60" viewBox="0 0 60 60"><line x1="30" y1="50" x2="30" y2="28" stroke="#228B22" stroke-width="3"/><ellipse cx="30" cy="22" rx="14" ry="16" fill="#98FB98" opacity="0.6"/><line x1="30" y1="22" x2="24" y2="16" stroke="#228B22" stroke-width="2"/><line x1="30" y1="22" x2="36" y2="14" stroke="#228B22" stroke-width="2"/></svg>',
+    holland: '<svg width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="20" fill="none" stroke="#FDCB6E" stroke-width="2"/><circle cx="30" cy="18" r="4" fill="#FFB6C1"/><circle cx="40" cy="30" r="4" fill="#87CEEB"/><circle cx="35" cy="42" r="4" fill="#98FB98"/><circle cx="25" cy="42" r="4" fill="#A29BFE"/><circle cx="20" cy="30" r="4" fill="#FDCB6E"/></svg>'
+  };
+  iconContainer.innerHTML = dimIcons[q.dim] || dimIcons.holland;
+
+  // 渲染选项
+  const optionsContainer = document.getElementById('options-container');
+  const optionColors = [
+    {bg:'#F0FFF0', border:'#98FB98', selectedBg:'#C8F7C8'},
+    {bg:'#FFF8F0', border:'#FFE4B5', selectedBg:'#FFE8C0'},
+    {bg:'#F0F8FF', border:'#B0D4F1', selectedBg:'#C8E4F8'},
+    {bg:'#FFF0F5', border:'#FFB6C1', selectedBg:'#FFD0D8'}
+  ];
+
+  const selectedAnswer = state.answers[state.currentQ];
+  let html = '';
+
+  if (q.dim === 'holland' && q.options) {
+    // 霍兰德题目：显示题目自带选项
+    for (let i = 0; i < q.options.length; i++) {
+      const isSelected = selectedAnswer === i;
+      const colors = optionColors[i];
+      const bg = isSelected ? colors.selectedBg : colors.bg;
+      const border = isSelected ? colors.border : 'transparent';
+      const scale = isSelected ? 'selected' : '';
+      html += `<div class="option-card ${scale} p-4 rounded-2xl cursor-pointer" style="background:${bg}; border:2px solid ${border};" onclick="selectOption(${i})">
+        <span class="font-medium text-sm" style="color:#444;">${String.fromCharCode(65+i)}. ${q.options[i].text}</span>
+      </div>`;
+    }
+  } else {
+    // 普通题目：显示标准化4档
+    const optionLabels = [
+      'A. 完全符合，经常主动表现',
+      'B. 比较符合，偶尔主动表现',
+      'C. 一般，很少出现这类行为',
+      'D. 几乎不符合，几乎看不到'
+    ];
+    for (let i = 0; i < 4; i++) {
+      const isSelected = selectedAnswer === i;
+      const colors = optionColors[i];
+      const bg = isSelected ? colors.selectedBg : colors.bg;
+      const border = isSelected ? colors.border : 'transparent';
+      const scale = isSelected ? 'selected' : '';
+      html += `<div class="option-card ${scale} p-4 rounded-2xl cursor-pointer" style="background:${bg}; border:2px solid ${border};" onclick="selectOption(${i})">
+        <span class="font-medium text-sm" style="color:#444;">${optionLabels[i]}</span>
+      </div>`;
+    }
+  }
+  optionsContainer.innerHTML = html;
+
+  // 显示/隐藏下一题按钮
+  const nextContainer = document.getElementById('next-btn-container');
+  const nextBtn = document.getElementById('btn-next');
+  if (selectedAnswer !== undefined) {
+    nextContainer.style.display = '';
+    nextBtn.textContent = current === total ? '提交测评' : '下一题';
+  } else {
+    nextContainer.style.display = 'none';
+  }
+}
+
+// ==================== 选择选项 ====================
+function selectOption(index) {
+  state.answers[state.currentQ] = index;
+  localStorage.setItem('talent_answers', JSON.stringify(state.answers));
+  localStorage.setItem('talent_current', state.currentQ.toString());
+  renderQuestion();
+}
+
+// ==================== 下一题 ====================
+function nextQuestion() {
+  if (state.answers[state.currentQ] === undefined) return;
+
+  if (state.currentQ < state.questions.length - 1) {
+    state.currentQ++;
+    localStorage.setItem('talent_current', state.currentQ.toString());
+    renderQuestion();
+  } else {
+    // 提交测评
+    calculateScores();
+    showPage('page-report');
+    renderReport();
+  }
+}
+
+// ==================== 计算分数 ====================
+function calculateScores() {
+  const scores = {};
+  const dimCounts = {};
+
+  // 初始化
+  DIMENSIONS.forEach(d => {
+    scores[d.key] = 0;
+    dimCounts[d.key] = 0;
+  });
+
+  // 统计各维度得分
+  state.questions.forEach((q, i) => {
+    if (q.dim === 'holland') return; // 霍兰德单独统计
+    const answerIndex = state.answers[i];
+    if (answerIndex === undefined) return;
+    const score = 4 - answerIndex; // A=4, B=3, C=2, D=1
+    scores[q.dim] = (scores[q.dim] || 0) + score;
+    dimCounts[q.dim] = (dimCounts[q.dim] || 0) + 1;
+  });
+
+  // 归一化到0-100
+  DIMENSIONS.forEach(d => {
+    if (dimCounts[d.key] > 0) {
+      scores[d.key] = Math.round(scores[d.key] / (dimCounts[d.key] * 4) * 100);
+    } else {
+      scores[d.key] = 0;
+    }
+  });
+
+  state.scores = scores;
+  localStorage.setItem('talent_scores', JSON.stringify(scores));
+
+  // 霍兰德统计（仅12-18岁）
+  if (state.age === '12-18') {
+    const hollandScores = {R:0,I:0,A:0,S:0,E:0,C:0};
+    state.questions.forEach((q, i) => {
+      if (q.dim === 'holland' && q.options && state.answers[i] !== undefined) {
+        const selectedOption = q.options[state.answers[i]];
+        if (selectedOption && selectedOption.type) {
+          hollandScores[selectedOption.type]++;
+        }
+      }
+    });
+    state.hollandScores = hollandScores;
+  }
+}
+
+// ==================== 渲染报告 ====================
+function renderReport() {
+  const scores = state.scores;
+
+  // 基础信息
+  document.getElementById('report-age').textContent = state.age + '岁';
+  const now = new Date();
+  document.getElementById('report-time').textContent = now.getFullYear() + '-' + (now.getMonth()+1).toString().padStart(2,'0') + '-' + now.getDate().toString().padStart(2,'0') + ' ' + now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+
+  // 雷达图
+  drawRadarChart();
+
+  // 天赋分区解读
+  renderInterpretation();
+
+  // 霍兰德职业倾向（仅12-18岁）
+  renderHollandReport();
+
+  // 行动方案
+  renderActionGuide();
+
+  // 沟通话术
+  renderCommunication();
+}
+
+// ==================== 雷达图绘制 ====================
+function drawRadarChart() {
+  const canvas = document.getElementById('radar-canvas');
+  const ctx = canvas.getContext('2d');
+  const isMobile = window.innerWidth < 640;
+  const size = isMobile ? 300 : 400;
+  canvas.width = size;
+  canvas.height = size;
+
+  const centerX = size / 2;
+  const centerY = size / 2;
+  const maxRadius = size / 2 - 50;
+  const sides = 8;
+  const angleStep = (Math.PI * 2) / sides;
+  const startAngle = -Math.PI / 2; // 从顶部开始
+
+  const scores = DIMENSIONS.map(d => state.scores[d.key] || 0);
+  const labels = DIM_LABELS;
+
+  // 动画绘制
+  let progress = 0;
+  const duration = 1000; // 1秒
+  const startTime = performance.now();
+
+  function animate(currentTime) {
+    progress = Math.min((currentTime - startTime) / duration, 1);
+    // 缓动函数
+    const easedProgress = 1 - Math.pow(1 - progress, 3);
+
+    ctx.clearRect(0, 0, size, size);
+
+    // 绘制背景网格（3层）
+    for (let layer = 1; layer <= 3; layer++) {
+      const r = maxRadius * (layer / 3);
+      ctx.beginPath();
+      for (let i = 0; i <= sides; i++) {
+        const angle = startAngle + i * angleStep;
+        const x = centerX + r * Math.cos(angle);
+        const y = centerY + r * Math.sin(angle);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.strokeStyle = '#E0E0E0';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+
+    // 绘制轴线
+    for (let i = 0; i < sides; i++) {
+      const angle = startAngle + i * angleStep;
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY);
+      ctx.lineTo(centerX + maxRadius * Math.cos(angle), centerY + maxRadius * Math.sin(angle));
+      ctx.strokeStyle = '#E8E8E8';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+
+    // 绘制数据区域（带动画）
+    ctx.beginPath();
+    for (let i = 0; i <= sides; i++) {
+      const idx = i % sides;
+      const angle = startAngle + idx * angleStep;
+      const scoreVal = scores[idx] / 100;
+      const r = maxRadius * scoreVal * easedProgress;
+      const x = centerX + r * Math.cos(angle);
+      const y = centerY + r * Math.sin(angle);
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+
+    // 渐变填充
+    const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, maxRadius);
+    gradient.addColorStop(0, 'rgba(162,155,254,0.1)');
+    gradient.addColorStop(1, 'rgba(162,155,254,0.4)');
+    ctx.fillStyle = gradient;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(162,155,254,0.8)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // 绘制数据点和标签
+    for (let i = 0; i < sides; i++) {
+      const angle = startAngle + i * angleStep;
+      const scoreVal = scores[i] / 100;
+      const r = maxRadius * scoreVal * easedProgress;
+      const x = centerX + r * Math.cos(angle);
+      const y = centerY + r * Math.sin(angle);
+
+      // 数据点颜色
+      let pointColor = '#DDD'; // 低分
+      if (scores[i] >= 75) pointColor = '#98FB98';
+      else if (scores[i] >= 50) pointColor = '#FFE4B5';
+
+      ctx.beginPath();
+      ctx.arc(x, y, 4, 0, Math.PI * 2);
+      ctx.fillStyle = pointColor;
+      ctx.fill();
+      ctx.strokeStyle = '#666';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // 标签
+      const labelR = maxRadius + 28;
+      const labelX = centerX + labelR * Math.cos(angle);
+      const labelY = centerY + labelR * Math.sin(angle);
+      ctx.font = isMobile ? '11px sans-serif' : '13px sans-serif';
+      ctx.fillStyle = '#666';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(labels[i], labelX, labelY);
+
+      // 分数
+      const scoreR = maxRadius + 44;
+      const scoreX = centerX + scoreR * Math.cos(angle);
+      const scoreY = centerY + scoreR * Math.sin(angle);
+      ctx.font = isMobile ? '10px sans-serif' : '11px sans-serif';
+      let scoreColor = '#999';
+      if (scores[i] >= 75) scoreColor = '#228B22';
+      else if (scores[i] >= 50) scoreColor = '#DAA520';
+      else scoreColor = '#BBB';
+      ctx.fillStyle = scoreColor;
+      ctx.fillText(Math.round(scores[i] * easedProgress) + '', scoreX, scoreY);
+    }
+
+    if (progress < 1) {
+      requestAnimationFrame(animate);
+    }
+  }
+
+  requestAnimationFrame(animate);
+}
+
+// ==================== 霍兰德职业倾向报告 ====================
+function renderHollandReport() {
+  const section = document.getElementById('holland-section');
+  const container = document.getElementById('holland-report');
+
+  if (state.age !== '12-18' || !state.hollandScores) {
+    section.style.display = 'none';
+    return;
+  }
+
+  section.style.display = '';
+
+  const HOLLAND_NAMES = {
+    R: '实用型（Realistic）',
+    I: '研究型（Investigative）',
+    A: '艺术型（Artistic）',
+    S: '社会型（Social）',
+    E: '企业型（Enterprising）',
+    C: '常规型（Conventional）'
+  };
+
+  const HOLLAND_DESC = {
+    R: '喜欢动手操作、使用工具、修理制造。适合：工程师、技师、运动员、厨师等',
+    I: '喜欢观察、分析、研究。适合：科学家、医生、程序员、分析师等',
+    A: '喜欢创意、表达、设计。适合：设计师、作家、音乐家、导演等',
+    S: '喜欢帮助、教学、服务。适合：教师、咨询师、社工、医护等',
+    E: '喜欢领导、说服、组织。适合：企业家、管理者、律师、销售总监等',
+    C: '喜欢有序、规范、数据处理。适合：会计、审计、行政管理、档案管理等'
+  };
+
+  const HOLLAND_COLORS = {
+    R: '#98FB98', I: '#87CEEB', A: '#FFB6C1', S: '#FDCB6E', E: '#A29BFE', C: '#FFE4B5'
+  };
+
+  const sorted = Object.entries(state.hollandScores).sort((a, b) => b[1] - a[1]);
+  const top1 = sorted[0];
+  const top2 = sorted[1];
+
+  let html = '';
+
+  // RIASEC各类型得分展示
+  html += '<div class="flex flex-wrap gap-2 mb-4">';
+  sorted.forEach(([type, count]) => {
+    html += `<span class="text-xs px-3 py-1.5 rounded-full font-medium" style="background:${HOLLAND_COLORS[type]}; color:#444;">${HOLLAND_NAMES[type]}：${count}题</span>`;
+  });
+  html += '</div>';
+
+  // 主要职业倾向
+  html += `<div class="p-4 rounded-xl mb-3" style="background:rgba(255,255,255,0.6);">
+    <p class="text-sm font-bold mb-2" style="color:#444;">🏆 您的主要职业倾向</p>
+    <p class="text-sm" style="color:#666;"><strong style="color:#DAA520;">${HOLLAND_NAMES[top1[0]]}</strong> + <strong style="color:#DAA520;">${HOLLAND_NAMES[top2[0]]}</strong></p>
+    <p class="text-xs mt-1" style="color:#999;">霍兰德代码：${top1[0]}${top2[0]}</p>
+  </div>`;
+
+  // 各类型详细解读
+  html += '<div class="grid grid-cols-1 md:grid-cols-2 gap-3">';
+  sorted.forEach(([type, count], idx) => {
+    const isTop = idx < 2;
+    const borderStyle = isTop ? 'border:2px solid #DAA520;' : '';
+    html += `<div class="p-3 rounded-xl" style="background:rgba(255,255,255,0.6); ${borderStyle}">
+      <div class="flex items-center gap-2 mb-1">
+        <span class="text-xs px-2 py-0.5 rounded-full font-bold" style="background:${HOLLAND_COLORS[type]}; color:#444;">${type}</span>
+        <span class="text-sm font-bold" style="color:#444;">${HOLLAND_NAMES[type]}</span>
+        ${isTop ? '<span class="text-xs px-2 py-0.5 rounded-full" style="background:#DAA520; color:white;">主要倾向</span>' : ''}
+      </div>
+      <p class="text-xs leading-relaxed" style="color:#666;">${HOLLAND_DESC[type]}</p>
+      <div class="mt-2">
+        <div class="w-full bg-gray-100 rounded-full h-2">
+          <div class="h-2 rounded-full" style="width:${Math.round(count/8*100)}%; background:${HOLLAND_COLORS[type]};"></div>
+        </div>
+        <p class="text-xs mt-1 text-right" style="color:#999;">${count}/8题</p>
+      </div>
+    </div>`;
+  });
+  html += '</div>';
+
+  container.innerHTML = html;
+}
+
+// ==================== 天赋分区解读 ====================
+function renderInterpretation() {
+  const scores = state.scores;
+  const sorted = DIMENSIONS.map(d => ({key: d.key, name: d.name, score: scores[d.key] || 0}))
+    .sort((a, b) => b.score - a.score);
+
+  // 核心优势区：前3
+  const advantageEl = document.getElementById('advantage-zone');
+  let advHtml = '';
+  sorted.slice(0, 3).forEach(item => {
+    const interp = INTERPRETATION[item.key];
+    const guide = COMPLETE_GUIDE[item.key];
+    const level = item.score >= 75 ? 'high' : (item.score >= 50 ? 'mid' : 'low');
+    const dimInfo = DIMENSIONS.find(d => d.key === item.key);
+    advHtml += `<div class="mb-3 p-3 rounded-xl" style="background:rgba(255,255,255,0.6);">
+      <div class="flex items-center gap-2 mb-1">
+        <span class="text-lg">${dimInfo.icon}</span>
+        <span class="font-bold text-sm" style="color:#228B22;">${item.name}</span>
+        <span class="text-xs px-2 py-0.5 rounded-full" style="background:#E8FFE8; color:#228B22;">${item.score}分</span>
+      </div>
+      <p class="text-xs leading-relaxed" style="color:#666;">${interp[level]}</p>
+      <p class="text-xs mt-1" style="color:#999;">性格特质：${guide.traits}</p>
+    </div>`;
+  });
+  advantageEl.innerHTML = advHtml;
+
+  // 潜力拓展区：中间3
+  const potentialEl = document.getElementById('potential-zone');
+  let potHtml = '';
+  sorted.slice(3, 6).forEach(item => {
+    const interp = INTERPRETATION[item.key];
+    const guide = COMPLETE_GUIDE[item.key];
+    const level = item.score >= 75 ? 'high' : (item.score >= 50 ? 'mid' : 'low');
+    const dimInfo = DIMENSIONS.find(d => d.key === item.key);
+    potHtml += `<div class="mb-3 p-3 rounded-xl" style="background:rgba(255,255,255,0.6);">
+      <div class="flex items-center gap-2 mb-1">
+        <span class="text-lg">${dimInfo.icon}</span>
+        <span class="font-bold text-sm" style="color:#DAA520;">${item.name}</span>
+        <span class="text-xs px-2 py-0.5 rounded-full" style="background:#FFF8E8; color:#DAA520;">${item.score}分</span>
+      </div>
+      <p class="text-xs leading-relaxed" style="color:#666;">${interp[level]}</p>
+      <p class="text-xs mt-1" style="color:#999;">性格特质：${guide.traits}</p>
+    </div>`;
+  });
+  potentialEl.innerHTML = potHtml;
+
+  // 关注提升区：后2（低分区）
+  const weakEl = document.getElementById('weak-zone');
+  if (weakEl) {
+    let weakHtml = '';
+    sorted.slice(6, 8).forEach(item => {
+      const interp = INTERPRETATION[item.key];
+      const guide = COMPLETE_GUIDE[item.key];
+      const weakGuide = WEAK_GUIDE[item.key];
+      const dimInfo = DIMENSIONS.find(d => d.key === item.key);
+      weakHtml += `<div class="mb-3 p-3 rounded-xl" style="background:rgba(255,255,255,0.6);">
+        <div class="flex items-center gap-2 mb-1">
+          <span class="text-lg">${dimInfo.icon}</span>
+          <span class="font-bold text-sm" style="color:#888;">${item.name}</span>
+          <span class="text-xs px-2 py-0.5 rounded-full" style="background:#F5F5F5; color:#888;">${item.score}分</span>
+        </div>
+        <p class="text-xs leading-relaxed" style="color:#666;">${interp.low}</p>
+        <p class="text-xs mt-1" style="color:#999;">性格特质：${guide.traits}</p>
+        <div class="mt-2 p-2 rounded-lg" style="background:#FFF0F5;">
+          <p class="text-xs font-bold mb-1" style="color:#D63384;">💡 心态引导</p>
+          <p class="text-xs" style="color:#666;">${weakGuide.mindset}</p>
+        </div>
+      </div>`;
+    });
+    weakEl.innerHTML = weakHtml;
+  }
+}
+
+// ==================== 行动方案 ====================
+function renderActionGuide() {
+  const scores = state.scores;
+  const sorted = DIMENSIONS.map(d => ({key: d.key, name: d.name, score: scores[d.key] || 0}))
+    .sort((a, b) => b.score - a.score);
+
+  const age = state.age;
+  const guideEl = document.getElementById('action-guide');
+  let html = '';
+
+  sorted.forEach(dim => {
+    const guide = COMPLETE_GUIDE[dim.key];
+    const weakGuide = WEAK_GUIDE[dim.key];
+    const dimInfo = DIMENSIONS.find(d => d.key === dim.key);
+    const isLow = dim.score < 50;
+    const isMid = dim.score >= 50 && dim.score < 75;
+    const isHigh = dim.score >= 75;
+
+    let scoreColor = '#888';
+    let scoreBg = '#F5F5F5';
+    if (isHigh) { scoreColor = '#228B22'; scoreBg = '#E8FFE8'; }
+    else if (isMid) { scoreColor = '#DAA520'; scoreBg = '#FFF8E8'; }
+
+    html += `<div class="mb-4 p-4 rounded-xl" style="background:#FAFAFA; border-left:4px solid ${isHigh ? '#98FB98' : isMid ? '#FFE4B5' : '#DDD'};">`;
+
+    // 标题
+    html += `<div class="flex items-center gap-2 mb-3">
+      <span class="text-lg">${dimInfo.icon}</span>
+      <span class="font-bold text-sm" style="color:#444;">${dim.name}（${dim.score}分）</span>
+      <span class="text-xs px-2 py-0.5 rounded-full" style="background:${scoreBg}; color:${scoreColor};">${isHigh ? '优势区' : isMid ? '潜力区' : '关注区'}</span>
+    </div>`;
+
+    // 模块1：天赋精准解读
+    html += `<div class="mb-3 p-3 rounded-lg" style="background:rgba(255,255,255,0.8);">
+      <p class="text-xs font-bold mb-1" style="color:#A29BFE;">🎯 天赋精准解读</p>
+      <p class="text-xs leading-relaxed" style="color:#666;">性格特质：${guide.traits}</p>
+      <p class="text-xs mt-1 leading-relaxed" style="color:#666;">学习类型：${isHigh ? '适合深度探索和专项培养' : isMid ? '适合适度拓展和兴趣激发' : '适合游戏化引导和轻量化训练'}</p>
+    </div>`;
+
+    // 模块2：家庭每日可执行训练
+    html += `<div class="mb-3 p-3 rounded-lg" style="background:rgba(255,255,255,0.8);">
+      <p class="text-xs font-bold mb-1" style="color:#87CEEB;">🏠 家庭每日可执行训练（${age}岁）</p>
+      <ul class="text-xs pl-4 list-disc" style="color:#666;">
+        ${guide.daily[age].map(d => `<li>${d}</li>`).join('')}
+      </ul>
+    </div>`;
+
+    // 模块3：精准兴趣班/特长培养建议
+    html += `<div class="mb-3 p-3 rounded-lg" style="background:rgba(255,255,255,0.8);">
+      <div class="mb-2">
+        <p class="text-xs font-bold mb-1" style="color:#228B22;">✅ 适合的兴趣班</p>
+        <div class="flex flex-wrap gap-1">
+          ${guide.suitableClasses.map(c => `<span class="text-xs px-2 py-0.5 rounded-full" style="background:#E8FFE8; color:#228B22;">${c}</span>`).join('')}
+        </div>
+      </div>
+      <div>
+        <p class="text-xs font-bold mb-1" style="color:#D63384;">❌ 不建议的兴趣班</p>
+        <div class="flex flex-wrap gap-1">
+          ${guide.unsuitableClasses.map(c => `<span class="text-xs px-2 py-0.5 rounded-full" style="background:#FFF0F3; color:#D63384;">${c}</span>`).join('')}
+        </div>
+      </div>
+    </div>`;
+
+    // 模块4：专属书单推荐
+    html += `<div class="mb-3 p-3 rounded-lg" style="background:rgba(255,255,255,0.8);">
+      <p class="text-xs font-bold mb-1" style="color:#FFB6C1;">📚 专属书单推荐（${age}岁）</p>
+      <ul class="text-xs pl-4 list-disc" style="color:#666;">
+        ${guide.books[age].map(b => `<li>${b}</li>`).join('')}
+      </ul>
+    </div>`;
+
+    // 模块5：未来升学+选科+大学专业+未来职业规划
+    html += `<div class="mb-3 p-3 rounded-lg" style="background:rgba(255,255,255,0.8);">
+      <p class="text-xs font-bold mb-1" style="color:#DAA520;">🎓 未来规划</p>
+      <p class="text-xs mt-1 leading-relaxed" style="color:#666;">升学优势：${guide.furtherStudy}</p>
+      <p class="text-xs mt-1 leading-relaxed" style="color:#666;">${guide.subjects}</p>
+      <p class="text-xs mt-1 leading-relaxed" style="color:#666;">大学专业：${guide.majors}</p>
+      <p class="text-xs mt-1 leading-relaxed" style="color:#666;">未来职业：${guide.careers}</p>
+    </div>`;
+
+    // 低分维度温柔引导方案
+    if (isLow && weakGuide) {
+      html += `<div class="mt-3 p-3 rounded-lg" style="background:#FFF0F5; border:1px dashed #FFB6C1;">
+        <p class="text-xs font-bold mb-1" style="color:#D63384;">💡 温柔引导方案</p>
+        <p class="text-xs mt-1 leading-relaxed" style="color:#666;">心态引导：${weakGuide.mindset}</p>
+        <p class="text-xs mt-1" style="color:#666;">轻量化训练：</p>
+        <ul class="text-xs pl-4 list-disc mt-1" style="color:#666;">
+          ${weakGuide.lightTraining.map(t => `<li>${t}</li>`).join('')}
+        </ul>
+        <p class="text-xs mt-2 p-2 rounded" style="background:rgba(255,255,255,0.8); color:#D63384;">💬 ${weakGuide.positiveMessage}</p>
+      </div>`;
+    }
+
+    html += '</div>';
+  });
+
+  guideEl.innerHTML = html;
+}
+
+// ==================== 沟通话术 ====================
+function renderCommunication() {
+  const el = document.getElementById('communication-templates');
+  const scores = state.scores;
+  const sorted = DIMENSIONS.map(d => ({key: d.key, name: d.name, score: scores[d.key] || 0}))
+    .sort((a, b) => b.score - a.score);
+
+  let html = '<div class="mb-4"><h4 class="font-bold text-sm mb-2" style="color:#FFB6C1;">🌟 夸奖努力型话术（避免"你真聪明"）</h4>';
+  PRAISE_TEMPLATES.forEach((t, i) => {
+    html += `<div class="flex items-start gap-2 mb-2 p-2 rounded-lg" style="background:rgba(255,255,255,0.6);">
+      <p class="text-xs flex-1 leading-relaxed" style="color:#666;">${t}</p>
+      <button class="copy-btn text-xs px-2 py-1 rounded-full flex-shrink-0" style="background:#F0F0F0; color:#888;" onclick="copyText(this, '${t.replace(/'/g, "\\'")}')">复制</button>
+    </div>`;
+  });
+  html += '</div>';
+
+  html += '<div class="mb-4"><h4 class="font-bold text-sm mb-2" style="color:#A29BFE;">🌱 引导薄弱天赋温和话术</h4>';
+  GUIDE_TEMPLATES.forEach((t, i) => {
+    html += `<div class="flex items-start gap-2 mb-2 p-2 rounded-lg" style="background:rgba(255,255,255,0.6);">
+      <p class="text-xs flex-1 leading-relaxed" style="color:#666;">${t}</p>
+      <button class="copy-btn text-xs px-2 py-1 rounded-full flex-shrink-0" style="background:#F0F0F0; color:#888;" onclick="copyText(this, '${t.replace(/'/g, "\\'")}')">复制</button>
+    </div>`;
+  });
+  html += '</div>';
+
+  html += '<div><h4 class="font-bold text-sm mb-2" style="color:#DAA520;">🎯 维度专属夸奖话术</h4>';
+  sorted.forEach(dim => {
+    const dimInfo = DIMENSIONS.find(d => d.key === dim.key);
+    const praises = DIMENSION_PRAISE[dim.key];
+    if (!praises) return;
+    html += `<div class="mb-3 p-3 rounded-lg" style="background:rgba(255,255,255,0.6);">
+      <p class="text-xs font-bold mb-2" style="color:#228B22;">${dimInfo.icon} ${dim.name}（${dim.score}分）</p>
+      ${praises.map((p, i) => `<div class="flex items-start gap-2 mb-1">
+        <span class="text-xs" style="color:#FFB6C1;">${i+1}.</span>
+        <p class="text-xs flex-1 leading-relaxed" style="color:#666;">${p}</p>
+        <button class="copy-btn text-xs px-2 py-0.5 rounded-full flex-shrink-0" style="background:#F0F0F0; color:#888;" onclick="copyText(this, '${p.replace(/'/g, "\\'")}')">复制</button>
+      </div>`).join('')}
+    </div>`;
+  });
+  html += '</div>';
+
+  html += '<div><h4 class="font-bold text-sm mb-2" style="color:#DAA520;">💬 维度专属引导话术</h4>';
+  sorted.forEach(dim => {
+    const dimInfo = DIMENSIONS.find(d => d.key === dim.key);
+    const guides = DIMENSION_GUIDE[dim.key];
+    if (!guides) return;
+    html += `<div class="mb-3 p-3 rounded-lg" style="background:rgba(255,255,255,0.6);">
+      <p class="text-xs font-bold mb-2" style="color:#A29BFE;">${dimInfo.icon} ${dim.name}（${dim.score}分）</p>
+      ${guides.map((g, i) => `<div class="flex items-start gap-2 mb-1">
+        <span class="text-xs" style="color:#A29BFE;">${i+1}.</span>
+        <p class="text-xs flex-1 leading-relaxed" style="color:#666;">${g}</p>
+        <button class="copy-btn text-xs px-2 py-0.5 rounded-full flex-shrink-0" style="background:#F0F0F0; color:#888;" onclick="copyText(this, '${g.replace(/'/g, "\\'")}')">复制</button>
+      </div>`).join('')}
+    </div>`;
+  });
+  html += '</div>';
+
+  el.innerHTML = html;
+}
+
+// ==================== 复制文本 ====================
+function copyText(btn, text) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = '已复制';
+      btn.style.background = '#98FB98';
+      btn.style.color = '#228B22';
+      setTimeout(() => { btn.textContent = '复制'; btn.style.background = '#F0F0F0'; btn.style.color = '#888'; }, 1500);
+    });
+  } else {
+    // 降级方案
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.textContent = '已复制';
+    btn.style.background = '#98FB98';
+    btn.style.color = '#228B22';
+    setTimeout(() => { btn.textContent = '复制'; btn.style.background = '#F0F0F0'; btn.style.color = '#888'; }, 1500);
+  }
+}
+
+// ==================== 返回确认 ====================
+function confirmBack() {
+  document.getElementById('modal-back').style.display = 'flex';
+}
+function closeModal() {
+  document.getElementById('modal-back').style.display = 'none';
+}
+function goBackFromTest() {
+  closeModal();
+  showPage('page-age-select');
+}
+
+// ==================== 重新测评 ====================
+function retakeTest() {
+  localStorage.removeItem('talent_answers');
+  localStorage.removeItem('talent_current');
+  localStorage.removeItem('talent_scores');
+  state.answers = {};
+  state.currentQ = 0;
+  state.scores = {};
+  showPage('page-age-select');
+}
+
+// ==================== 保存报告 ====================
+function saveReport() {
+  const scores = state.scores;
+  const age = state.age;
+  let text = '=== 儿童天赋测评报告 ===\n';
+  text += '年龄段：' + age + '岁\n';
+  text += '完成时间：' + document.getElementById('report-time').textContent + '\n\n';
+  text += '--- 8大智能得分 ---\n';
+  DIMENSIONS.forEach(d => {
+    text += d.name + '：' + (scores[d.key] || 0) + '分\n';
+  });
+
+  if (state.age === '12-18' && state.hollandScores) {
+    text += '\n--- 霍兰德职业倾向 ---\n';
+    const hollandNames = {R:'实用型（Realistic）',I:'研究型（Investigative）',A:'艺术型（Artistic）',S:'社会型（Social）',E:'企业型（Enterprising）',C:'常规型（Conventional）'};
+    const hollandDesc = {
+      R:'喜欢动手操作、使用工具、修理制造。适合：工程师、技师、运动员、厨师等',
+      I:'喜欢观察、分析、研究。适合：科学家、医生、程序员、分析师等',
+      A:'喜欢创意、表达、设计。适合：设计师、作家、音乐家、导演等',
+      S:'喜欢帮助、教学、服务。适合：教师、咨询师、社工、医护等',
+      E:'喜欢领导、说服、组织。适合：企业家、管理者、律师、销售总监等',
+      C:'喜欢有序、规范、数据处理。适合：会计、审计、行政管理、档案管理等'
+    };
+    const sortedH = Object.entries(state.hollandScores).sort((a,b) => b[1] - a[1]);
+    sortedH.forEach(([type, count]) => {
+      text += hollandNames[type] + '：' + count + '题 — ' + hollandDesc[type] + '\n';
+    });
+    text += '主要职业倾向：' + hollandNames[sortedH[0][0]] + ' + ' + hollandNames[sortedH[1][0]] + '（霍兰德代码：' + sortedH[0][0] + sortedH[1][0] + '）\n';
+  }
+
+  text += '\n--- 天赋解读 ---\n';
+  const sorted = DIMENSIONS.map(d => ({key: d.key, name: d.name, score: scores[d.key] || 0})).sort((a,b) => b.score - a.score);
+  sorted.forEach(item => {
+    const level = item.score >= 75 ? 'high' : (item.score >= 50 ? 'mid' : 'low');
+    const guide = COMPLETE_GUIDE[item.key];
+    text += '\n【' + item.name + '】（' + item.score + '分）\n';
+    text += '解读：' + INTERPRETATION[item.key][level] + '\n';
+    text += '性格特质：' + guide.traits + '\n';
+  });
+
+  text += '\n--- 完整行动方案（5大模块） ---\n';
+  sorted.forEach(dim => {
+    const guide = COMPLETE_GUIDE[dim.key];
+    const weakGuide = WEAK_GUIDE[dim.key];
+    const isLow = dim.score < 50;
+    
+    text += '\n────────────────────────────────\n';
+    text += '【' + dim.name + '】（' + dim.score + '分）\n';
+    text += '────────────────────────────────\n';
+
+    text += '\n🎯 天赋精准解读\n';
+    text += '性格特质：' + guide.traits + '\n';
+    text += '学习类型：' + (dim.score >= 75 ? '适合深度探索和专项培养' : dim.score >= 50 ? '适合适度拓展和兴趣激发' : '适合游戏化引导和轻量化训练') + '\n';
+
+    text += '\n🏠 家庭每日可执行训练（' + age + '岁）\n';
+    guide.daily[age].forEach((d, i) => { text += (i+1) + '. ' + d + '\n'; });
+
+    text += '\n✅ 适合的兴趣班\n';
+    text += guide.suitableClasses.join('；') + '\n';
+
+    text += '\n❌ 不建议的兴趣班\n';
+    text += guide.unsuitableClasses.join('；') + '\n';
+
+    text += '\n📚 专属书单推荐（' + age + '岁）\n';
+    guide.books[age].forEach((b, i) => { text += (i+1) + '. ' + b + '\n'; });
+
+    text += '\n🎓 未来规划\n';
+    text += '升学优势：' + guide.furtherStudy + '\n';
+    text += guide.subjects + '\n';
+    text += '大学专业：' + guide.majors + '\n';
+    text += '未来职业：' + guide.careers + '\n';
+
+    if (isLow && weakGuide) {
+      text += '\n💡 温柔引导方案\n';
+      text += '心态引导：' + weakGuide.mindset + '\n';
+      text += '轻量化训练：\n';
+      weakGuide.lightTraining.forEach((t, i) => { text += (i+1) + '. ' + t + '\n'; });
+      text += '正向鼓励：' + weakGuide.positiveMessage + '\n';
+    }
+  });
+
+  text += '\n--- 通用夸奖话术 ---\n';
+  PRAISE_TEMPLATES.forEach((t, i) => { text += (i+1) + '. ' + t + '\n'; });
+
+  text += '\n--- 通用引导话术 ---\n';
+  GUIDE_TEMPLATES.forEach((t, i) => { text += (i+1) + '. ' + t + '\n'; });
+
+  text += '\n--- 维度专属夸奖话术 ---\n';
+  sorted.forEach(dim => {
+    text += '\n【' + dim.name + '】\n';
+    DIMENSION_PRAISE[dim.key].forEach((p, i) => { text += (i+1) + '. ' + p + '\n'; });
+  });
+
+  text += '\n--- 维度专属引导话术 ---\n';
+  sorted.forEach(dim => {
+    text += '\n【' + dim.name + '】\n';
+    DIMENSION_GUIDE[dim.key].forEach((g, i) => { text += (i+1) + '. ' + g + '\n'; });
+  });
+
+  const blob = new Blob([text], {type: 'text/plain;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = '儿童天赋测评报告_' + age + '岁.txt';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ==================== 初始化：恢复进度 ====================
+(function init() {
+  const savedAge = localStorage.getItem('talent_age');
+  const savedScores = localStorage.getItem('talent_scores');
+  if (savedScores) {
+    try { state.scores = JSON.parse(savedScores); } catch(e) {}
+  }
+  if (savedAge) {
+    state.age = savedAge;
+  }
+  // 如果有已完成的测评，可以直接查看
+})();
+</script>
+
+</body>
+</html>
